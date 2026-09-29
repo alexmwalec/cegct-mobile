@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">CEGCT</string>
+    <string name="welcome_title">Kuyanjana ndi Ulamuliro wa Anthu</string>
+    <string name="login">Lowani</string>
+    <string name="register">Lembetsani</string>
+    <string name="email">Imelo</string>
+    <string name="password">Mawu achinsinsi</string>
+    <string name="forgot_password">Mwaiwala mawu achinsinsi?</string>
+    <string name="reset_password">Pangani mawu achinsinsi atsopano</string>
+    <string name="verify_email">Tsimikizirani Imelo</string>
+    <string name="home">Panyumba</string>
+    <string name="reports">Malipoti Anga</string>
+    <string name="report_issue">Lembani Vuto</string>
+    <string name="map">Mapu</string>
+    <string name="profile">Mbiri</string>
+    <string name="chat">Zokambirana</string>
+    <string name="notifications">Zidziwitso</string>
+    <string name="inspection">Kuwunika</string>
+</resources>

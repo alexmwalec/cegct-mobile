@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: CEGCT API Specification
+  version: 1.0.0
+  description: API for Civil Engineering & Governance Citizen Tracking
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+  /reports:
+    get:
+      summary: Get user reports
+      responses:
+        '200':
+          description: List of reports
+    post:
+      summary: Submit new report
+      responses:
+        '201':
+          description: Report created successfully
