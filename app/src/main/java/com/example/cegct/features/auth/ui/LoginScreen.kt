@@ -2,6 +2,7 @@ package com.example.cegct.features.auth.ui
 
 import android.util.Patterns
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -126,6 +127,7 @@ fun LoginScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onLoginSuccess: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     onBack: () -> Unit
 ) {
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
@@ -282,7 +284,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Main Log In Button with loading state
+                // Main Log In Button with green background and loading state
                 Button(
                     onClick = {
                         emailTouched = true
@@ -295,6 +297,10 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GreenPrimary,
+                        contentColor = Color.White
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     if (isLoading) {
@@ -320,7 +326,7 @@ fun LoginScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f))
                     Text(
-                        text = "  OR  ",
+                        text = "  Or login with  ",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -358,6 +364,29 @@ fun LoginScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Don't have an account? Sign Up
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Don't have an account? ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Sign Up",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = GreenPrimary
+                        ),
+                        modifier = Modifier.clickable { onNavigateToRegister() }
+                    )
                 }
             }
         }

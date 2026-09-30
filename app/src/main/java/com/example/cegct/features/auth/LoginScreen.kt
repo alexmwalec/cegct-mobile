@@ -9,12 +9,14 @@ fun LoginScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onLoginSuccess: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     onBack: () -> Unit
 ) {
     LoginScreen(
         viewModel = viewModel,
         onLoginSuccess = onLoginSuccess,
         onNavigateToForgotPassword = onNavigateToForgotPassword,
+        onNavigateToRegister = onNavigateToRegister,
         onBack = onBack
     )
 }

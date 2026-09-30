@@ -72,6 +72,7 @@ private val EyeOffIcon: ImageVector = ImageVector.Builder(
 fun RegisterScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     onBack: () -> Unit
 ) {
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
@@ -385,6 +386,10 @@ fun RegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GreenPrimary,
+                        contentColor = Color.White
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     if (isLoading) {
@@ -399,6 +404,29 @@ fun RegisterScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Already have an account? Log in
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Already have an account? ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Log in",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = GreenPrimary
+                        ),
+                        modifier = Modifier.clickable { onNavigateToLogin() }
+                    )
                 }
             }
         }

@@ -8,13 +8,11 @@ import com.example.cegct.features.auth.ui.WelcomeScreen
 fun WelcomeScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onNavigateToLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit,
-    onContinueAnonymously: () -> Unit
+    onNavigateToRegister: () -> Unit
 ) {
     WelcomeScreen(
         viewModel = viewModel,
         onNavigateToLogin = onNavigateToLogin,
-        onNavigateToRegister = onNavigateToRegister,
-        onContinueAnonymously = onContinueAnonymously
+        onNavigateToRegister = onNavigateToRegister
     )
 }

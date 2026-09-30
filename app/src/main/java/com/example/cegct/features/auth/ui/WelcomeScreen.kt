@@ -54,8 +54,7 @@ private val ShieldLogoIcon: ImageVector = ImageVector.Builder(
 fun WelcomeScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onNavigateToLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit,
-    onContinueAnonymously: () -> Unit
+    onNavigateToRegister: () -> Unit
 ) {
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -77,61 +76,7 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Bar: English / Chichewa language switch
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = Color.White.copy(alpha = 0.2f),
-                    contentColor = Color.White
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        FilterChip(
-                            selected = selectedLanguage == AppLanguage.ENGLISH,
-                            onClick = { viewModel.setLanguage(AppLanguage.ENGLISH) },
-                            label = {
-                                Text(
-                                    "English",
-                                    color = if (selectedLanguage == AppLanguage.ENGLISH) Color(0xFF1B5E20) else Color.White,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color.White,
-                                containerColor = Color.Transparent
-                            ),
-                            border = null,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        FilterChip(
-                            selected = selectedLanguage == AppLanguage.CHICHEWA,
-                            onClick = { viewModel.setLanguage(AppLanguage.CHICHEWA) },
-                            label = {
-                                Text(
-                                    "Chichewa",
-                                    color = if (selectedLanguage == AppLanguage.CHICHEWA) Color(0xFF1B5E20) else Color.White,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color.White,
-                                containerColor = Color.Transparent
-                            ),
-                            border = null,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Center Branding Section: Shield Logo & Tagline
             Column(
@@ -176,11 +121,11 @@ fun WelcomeScreen(
                 )
             }
 
-            // Bottom Actions: Log in, Create account, Continue anonymously on one screen
+            // Bottom Actions: Log in, Create account
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Log in button
@@ -202,7 +147,7 @@ fun WelcomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Create account button
                 OutlinedButton(
@@ -221,35 +166,6 @@ fun WelcomeScreen(
                         text = strings.createAccount,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Continue anonymously button - so user who doesn't want an account can start reporting immediately
-                TextButton(
-                    onClick = {
-                        viewModel.continueAnonymously {
-                            onContinueAnonymously()
-                        }
-                    },
-                    enabled = !isLoading,
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(
-                            text = strings.continueAnonymously,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White.copy(alpha = 0.95f)
-                            )
-                        )
-                    }
                 }
             }
         }

@@ -8,11 +8,13 @@ import com.example.cegct.features.auth.ui.RegisterScreen
 fun RegisterScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     onBack: () -> Unit
 ) {
     RegisterScreen(
         viewModel = viewModel,
         onRegisterSuccess = onRegisterSuccess,
+        onNavigateToLogin = onNavigateToLogin,
         onBack = onBack
     )
 }

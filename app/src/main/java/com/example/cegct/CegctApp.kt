@@ -30,8 +30,7 @@ fun CegctApp(
             WelcomeScreen(
                 viewModel = viewModel,
                 onNavigateToLogin = { currentScreen = AuthScreenState.LOGIN },
-                onNavigateToRegister = { currentScreen = AuthScreenState.SIGNUP },
-                onContinueAnonymously = { currentScreen = AuthScreenState.HOME }
+                onNavigateToRegister = { currentScreen = AuthScreenState.SIGNUP }
             )
         }
         AuthScreenState.LOGIN -> {
@@ -39,6 +38,7 @@ fun CegctApp(
                 viewModel = viewModel,
                 onLoginSuccess = { currentScreen = AuthScreenState.HOME },
                 onNavigateToForgotPassword = { currentScreen = AuthScreenState.FORGOT_PASSWORD },
+                onNavigateToRegister = { currentScreen = AuthScreenState.SIGNUP },
                 onBack = { currentScreen = AuthScreenState.WELCOME }
             )
         }
@@ -48,6 +48,7 @@ fun CegctApp(
                 onRegisterSuccess = {
                     currentScreen = AuthScreenState.VERIFY_EMAIL
                 },
+                onNavigateToLogin = { currentScreen = AuthScreenState.LOGIN },
                 onBack = { currentScreen = AuthScreenState.WELCOME }
             )
         }
