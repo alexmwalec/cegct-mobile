@@ -90,14 +90,17 @@ private val LocationIcon: ImageVector = ImageVector.Builder("LocationPin", 24.dp
     }
 }.build()
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportScreen(
     category: String = "Illegal dumping",
     onSubmitSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
+    var selectedCategory by remember { mutableStateOf(category) }
+    var dropdownExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("GPS Location Pinpointed (Current Area)") }
+    var locationAddress by remember { mutableStateOf("Nairobi Industrial Area, Block C - Nairobi County") }
     var isImageAttached by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
 
@@ -105,6 +108,14 @@ fun ReportScreen(
     var isRecording by remember { mutableStateOf(false) }
     var recordingSeconds by remember { mutableIntStateOf(0) }
     var hasVoiceNote by remember { mutableStateOf(false) }
+
+    val categoriesList = listOf(
+        "Illegal dumping",
+        "Air pollution",
+        "Unsafe waste disposal",
+        "Water pollution",
+        "Other"
+    )
 
     LaunchedEffect(isRecording) {
         if (isRecording) {
@@ -129,8 +140,8 @@ fun ReportScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             GreenCurvedHeader(
-                title = "Report Issue",
-                subtitle = "Category: $category",
+                title = "Report an Issue",
+                subtitle = "Snap evidence, select type & submit",
                 onBack = onBack
             )
 
@@ -140,26 +151,10 @@ fun ReportScreen(
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Category Chip Tag
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFFE8F5E9),
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
-                    Text(
-                        text = "Selected Issue: $category",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = GreenPrimary,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Section 1: Image / Photo Upload Box
+                // 1. Camera / Photo Capture Box
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isImageAttached) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = if (isImageAttached) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                     ),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
@@ -193,29 +188,65 @@ fun ReportScreen(
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = if (isImageAttached) "Photo Attached (Tap to Change)" else "Tap to Capture Photo or Upload Image",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = if (isImageAttached) GreenPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            text = if (isImageAttached) "Photo Attached (Tap to change)" else "Snap Photo or Upload Image",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = if (isImageAttached) GreenPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Capture evidence of the incident (JPG, PNG, MP4)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Section 2: GPS Location Field
-                OutlinedTextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    label = { Text("Location") },
-                    leadingIcon = { Icon(LocationIcon, contentDescription = "Location") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                // 2. Dropdown for Choosing Issue Type
+                ExposedDropdownMenuBox(
+                    expanded = dropdownExpanded,
+                    onExpandedChange = { dropdownExpanded = !dropdownExpanded },
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    OutlinedTextField(
+                        value = selectedCategory,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Choose Issue Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                            .fillMaxWidth()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    ExposedDropdownMenu(
+                        expanded = dropdownExpanded,
+                        onDismissRequest = { dropdownExpanded = false }
+                    ) {
+                        categoriesList.forEach { item ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = item,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = if (item == selectedCategory) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (item == selectedCategory) GreenPrimary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                },
+                                onClick = {
+                                    selectedCategory = item
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
-                // Section 3: Description Field with Integrated Microphone Audio Recorder
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 3. Description Field with Microphone Audio Recorder
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -223,14 +254,14 @@ fun ReportScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Description",
+                            text = "Description of Issue",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Type or record audio",
+                            text = "${description.length}/500",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color.Gray
                         )
                     }
 
@@ -238,8 +269,8 @@ fun ReportScreen(
 
                     OutlinedTextField(
                         value = description,
-                        onValueChange = { description = it },
-                        placeholder = { Text("Describe the issue details, location landmark, severity...") },
+                        onValueChange = { if (it.length <= 500) description = it },
+                        placeholder = { Text("Describe what happened, severity, location landmarks...") },
                         shape = RoundedCornerShape(12.dp),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         modifier = Modifier
@@ -249,87 +280,97 @@ fun ReportScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Audio Recording Action Row with Microphone Button
+                    // Audio Voice Note Recording Action Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(
-                                onClick = {
-                                    if (isRecording) {
-                                        isRecording = false
-                                        hasVoiceNote = true
-                                    } else {
-                                        isRecording = true
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(micButtonBgColor)
-                            ) {
-                                Icon(
-                                    imageVector = MicIcon,
-                                    contentDescription = "Record Audio Note",
-                                    tint = if (isRecording) Color.White else GreenPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            if (isRecording) {
-                                Text(
-                                    text = "Recording audio... (${recordingSeconds}s) - Tap mic to stop",
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE53935)
-                                    )
-                                )
-                            } else if (hasVoiceNote) {
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFE8F5E9)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "Voice Note Recorded (${recordingSeconds}s)",
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                color = GreenPrimary
-                                            )
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "✕",
-                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                            color = Color.Gray,
-                                            modifier = Modifier.clickable {
-                                                hasVoiceNote = false
-                                                recordingSeconds = 0
-                                            }
-                                        )
-                                    }
+                        IconButton(
+                            onClick = {
+                                if (isRecording) {
+                                    isRecording = false
+                                    hasVoiceNote = true
+                                } else {
+                                    isRecording = true
                                 }
-                            } else {
-                                Text(
-                                    text = "Tap mic to add voice note",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(micButtonBgColor)
+                        ) {
+                            Icon(
+                                imageVector = MicIcon,
+                                contentDescription = "Record Audio Note",
+                                tint = if (isRecording) Color.White else GreenPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        if (isRecording) {
+                            Text(
+                                text = "Recording audio... (${recordingSeconds}s) - Tap mic to stop",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFE53935)
                                 )
+                            )
+                        } else if (hasVoiceNote) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFE8F5E9)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Voice Note Attached (${recordingSeconds}s)",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = GreenPrimary
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "✕",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.Gray,
+                                        modifier = Modifier.clickable {
+                                            hasVoiceNote = false
+                                            recordingSeconds = 0
+                                        }
+                                    )
+                                }
                             }
+                        } else {
+                            Text(
+                                text = "Tap microphone for voice description",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
                         }
                     }
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 4. GPS Location Pinpoint
+                OutlinedTextField(
+                    value = locationAddress,
+                    onValueChange = { locationAddress = it },
+                    label = { Text("GPS Pinpoint Location") },
+                    leadingIcon = { Icon(LocationIcon, contentDescription = "Location") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Section 4: Main Submit Button
+                // 5. Submit Button
                 Button(
                     onClick = {
                         isSubmitting = true
