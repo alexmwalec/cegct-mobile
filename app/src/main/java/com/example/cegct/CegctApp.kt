@@ -9,8 +9,12 @@ import com.example.cegct.features.auth.ui.LoginScreen
 import com.example.cegct.features.auth.ui.RegisterScreen
 import com.example.cegct.features.auth.ui.VerifyEmailScreen
 import com.example.cegct.features.auth.ui.WelcomeScreen
+import com.example.cegct.features.casedetails.CaseDetailsScreen
+import com.example.cegct.features.chat.ChatScreen
 import com.example.cegct.features.home.HomeScreen
+import com.example.cegct.features.impact.ImpactScreen
 import com.example.cegct.features.map.MapScreen
+import com.example.cegct.features.myreports.MyReportsScreen
 import com.example.cegct.features.notifications.NotificationsScreen
 import com.example.cegct.features.profile.ProfileScreen
 import com.example.cegct.features.report.ReportScreen
@@ -24,6 +28,10 @@ enum class AuthScreenState {
     RESET_PASSWORD,
     HOME,
     REPORT,
+    MY_REPORTS,
+    IMPACT,
+    CASE_DETAILS,
+    CHAT,
     MAP,
     NOTIFICATIONS,
     PROFILE
@@ -37,6 +45,7 @@ fun CegctApp(
     val currentScreen = backStack.lastOrNull() ?: AuthScreenState.WELCOME
     var registeredEmail by remember { mutableStateOf("namadinga@example.com") }
     var selectedCategoryForReport by remember { mutableStateOf("Illegal dumping") }
+    var selectedReportId by remember { mutableStateOf("#CEGCT-2024-0042") }
 
     fun navigateTo(screen: AuthScreenState) {
         if (backStack.lastOrNull() != screen) {
@@ -120,9 +129,15 @@ fun CegctApp(
                     selectedCategoryForReport = category
                     navigateTo(AuthScreenState.REPORT)
                 },
-                onNavigateToMyReports = { navigateTo(AuthScreenState.NOTIFICATIONS) },
+                onNavigateToMyReports = { navigateTo(AuthScreenState.MY_REPORTS) },
                 onNavigateToMap = { navigateTo(AuthScreenState.MAP) },
+                onNavigateToImpacts = { navigateTo(AuthScreenState.IMPACT) },
                 onNavigateToProfile = { navigateTo(AuthScreenState.PROFILE) }
+            )
+        }
+        AuthScreenState.IMPACT -> {
+            ImpactScreen(
+                onBack = { navigateBack() }
             )
         }
         AuthScreenState.REPORT -> {
@@ -130,8 +145,29 @@ fun CegctApp(
                 category = selectedCategoryForReport,
                 onSubmitSuccess = {
                     backStack.clear()
-                    backStack.add(AuthScreenState.HOME)
+                    backStack.add(AuthScreenState.MY_REPORTS)
                 },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.MY_REPORTS -> {
+            MyReportsScreen(
+                onSelectReport = { reportId ->
+                    selectedReportId = reportId
+                    navigateTo(AuthScreenState.CASE_DETAILS)
+                },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.CASE_DETAILS -> {
+            CaseDetailsScreen(
+                reportId = selectedReportId,
+                onNavigateToChat = { navigateTo(AuthScreenState.CHAT) },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.CHAT -> {
+            ChatScreen(
                 onBack = { navigateBack() }
             )
         }
@@ -150,7 +186,7 @@ fun CegctApp(
             ProfileScreen(
                 onLogout = {
                     backStack.clear()
-                    backStack.add(AuthScreenState.LOGIN)
+                    backStack.add(AuthScreenState.WELCOME)
                 },
                 onBack = { navigateBack() }
             )
