@@ -175,6 +175,7 @@ fun RegisterScreen(
                             Text(text = nameErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
@@ -202,6 +203,7 @@ fun RegisterScreen(
                             Text(text = emailErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next
@@ -229,6 +231,7 @@ fun RegisterScreen(
                             Text(text = phoneErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Phone,
                         imeAction = ImeAction.Next
@@ -256,6 +259,7 @@ fun RegisterScreen(
                             Text(text = passwordErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -298,6 +302,7 @@ fun RegisterScreen(
                             Text(text = confirmErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -319,7 +324,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Terms of Service and Privacy Policy Checkbox - In-line, box aligned with input boxes
+                // Terms of Service and Privacy Policy Checkbox
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -328,7 +333,7 @@ fun RegisterScreen(
                         checked = termsAccepted,
                         onCheckedChange = { termsAccepted = it },
                         colors = CheckboxDefaults.colors(checkedColor = GreenPrimary),
-                        modifier = Modifier.offset(x = (-12).dp) // Align checkbox box border with input field edge
+                        modifier = Modifier.offset(x = (-12).dp)
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

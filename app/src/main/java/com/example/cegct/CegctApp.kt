@@ -10,6 +10,10 @@ import com.example.cegct.features.auth.ui.RegisterScreen
 import com.example.cegct.features.auth.ui.VerifyEmailScreen
 import com.example.cegct.features.auth.ui.WelcomeScreen
 import com.example.cegct.features.home.HomeScreen
+import com.example.cegct.features.map.MapScreen
+import com.example.cegct.features.notifications.NotificationsScreen
+import com.example.cegct.features.profile.ProfileScreen
+import com.example.cegct.features.report.ReportScreen
 
 enum class AuthScreenState {
     WELCOME,
@@ -18,7 +22,11 @@ enum class AuthScreenState {
     VERIFY_EMAIL,
     FORGOT_PASSWORD,
     RESET_PASSWORD,
-    HOME
+    HOME,
+    REPORT,
+    MAP,
+    NOTIFICATIONS,
+    PROFILE
 }
 
 @Composable
@@ -28,6 +36,7 @@ fun CegctApp(
     val backStack = remember { mutableStateListOf(AuthScreenState.WELCOME) }
     val currentScreen = backStack.lastOrNull() ?: AuthScreenState.WELCOME
     var registeredEmail by remember { mutableStateOf("namadinga@example.com") }
+    var selectedCategoryForReport by remember { mutableStateOf("Illegal dumping") }
 
     fun navigateTo(screen: AuthScreenState) {
         if (backStack.lastOrNull() != screen) {
@@ -107,13 +116,43 @@ fun CegctApp(
         }
         AuthScreenState.HOME -> {
             HomeScreen(
-                onNavigateToReport = {},
-                onNavigateToMyReports = {},
-                onNavigateToMap = {},
-                onNavigateToProfile = {
+                onNavigateToReport = { category ->
+                    selectedCategoryForReport = category
+                    navigateTo(AuthScreenState.REPORT)
+                },
+                onNavigateToMyReports = { navigateTo(AuthScreenState.NOTIFICATIONS) },
+                onNavigateToMap = { navigateTo(AuthScreenState.MAP) },
+                onNavigateToProfile = { navigateTo(AuthScreenState.PROFILE) }
+            )
+        }
+        AuthScreenState.REPORT -> {
+            ReportScreen(
+                category = selectedCategoryForReport,
+                onSubmitSuccess = {
                     backStack.clear()
-                    backStack.add(AuthScreenState.WELCOME)
-                }
+                    backStack.add(AuthScreenState.HOME)
+                },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.MAP -> {
+            MapScreen(
+                onConfirmLocation = { navigateBack() },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.NOTIFICATIONS -> {
+            NotificationsScreen(
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.PROFILE -> {
+            ProfileScreen(
+                onLogout = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.LOGIN)
+                },
+                onBack = { navigateBack() }
             )
         }
     }

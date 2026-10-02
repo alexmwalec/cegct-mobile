@@ -20,32 +20,29 @@ import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
 import kotlinx.coroutines.delay
 
-private val ShieldLogoIcon: ImageVector = ImageVector.Builder(
-    name = "ShieldLogo",
-    defaultWidth = 48.dp,
-    defaultHeight = 48.dp,
+// Leaf vector icon inside circle
+private val LeafLogoIcon: ImageVector = ImageVector.Builder(
+    name = "LeafLogo",
+    defaultWidth = 56.dp,
+    defaultHeight = 56.dp,
     viewportWidth = 24f,
     viewportHeight = 24f
 ).apply {
-    path(fill = SolidColor(Color.White)) {
-        moveTo(12f, 1f)
-        lineTo(3f, 5f)
-        lineTo(3f, 11f)
-        curveTo(3f, 16.55f, 6.84f, 21.74f, 12f, 23f)
-        curveTo(17.16f, 21.74f, 21f, 16.55f, 21f, 11f)
-        lineTo(21f, 5f)
-        lineTo(12f, 1f)
+    path(fill = SolidColor(Color(0xFF2E7D32))) {
+        moveTo(17f, 8f)
+        curveTo(17f, 8f, 13f, 2f, 6f, 5f)
+        curveTo(6f, 5f, 3f, 12f, 9f, 17f)
+        curveTo(13.5f, 20.75f, 19f, 17f, 19f, 17f)
+        curveTo(19f, 17f, 21f, 11f, 17f, 8f)
         close()
     }
-    path(fill = SolidColor(Color(0xFF2E7D32))) {
-        moveTo(12f, 5f)
-        lineTo(6f, 8f)
-        lineTo(6f, 11f)
-        curveTo(6f, 14.8f, 8.5f, 18.3f, 12f, 19.3f)
-        curveTo(15.5f, 18.3f, 18f, 14.8f, 18f, 11f)
-        lineTo(18f, 8f)
-        lineTo(12f, 5f)
-        close()
+    path(fill = null, stroke = SolidColor(Color.White), strokeLineWidth = 2f) {
+        moveTo(5f, 19f)
+        lineTo(12f, 12f)
+        moveTo(12f, 12f)
+        lineTo(16f, 10f)
+        moveTo(12f, 12f)
+        lineTo(9f, 15f)
     }
 }.build()
 
@@ -79,16 +76,17 @@ fun WelcomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Circle with leaf logo
             Box(
                 modifier = Modifier
                     .size(110.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.25f)),
+                    .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = ShieldLogoIcon,
-                    contentDescription = "CEGCT Logo",
+                    imageVector = LeafLogoIcon,
+                    contentDescription = "CEGCT Leaf Logo",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(64.dp)
                 )

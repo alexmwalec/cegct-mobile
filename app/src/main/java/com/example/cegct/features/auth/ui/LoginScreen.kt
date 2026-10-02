@@ -169,7 +169,6 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 20.dp),
-
             ) {
                 // Display generic auth error if present
                 if (authError != null) {
@@ -188,7 +187,15 @@ fun LoginScreen(
                     }
                 }
 
-                // Email Field with inline validation & KeyboardType.Email
+                // Bold "Login" title above Email field
+                Text(
+                    text = "Login",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Email Field with rounded shape same as buttons
                 OutlinedTextField(
                     value = email,
                     onValueChange = {
@@ -203,6 +210,7 @@ fun LoginScreen(
                             Text(text = emailErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next
@@ -219,7 +227,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Password Field with show/hide eye & KeyboardType.Password
+                // Password Field with rounded shape same as buttons
                 OutlinedTextField(
                     value = password,
                     onValueChange = {
@@ -234,13 +242,13 @@ fun LoginScreen(
                             Text(text = passwordErrorText, color = MaterialTheme.colorScheme.error)
                         }
                     },
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password"
-
                             )
                         }
                     },
@@ -264,7 +272,6 @@ fun LoginScreen(
                                 passwordTouched = true
                             }
                         }
-
                 )
 
                 // Forgot Password sits right under the password field
