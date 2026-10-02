@@ -1,10 +1,8 @@
 package com.example.cegct.features.auth.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
+import kotlinx.coroutines.delay
 
 private val ShieldLogoIcon: ImageVector = ImageVector.Builder(
     name = "ShieldLogo",
@@ -53,14 +52,18 @@ private val ShieldLogoIcon: ImageVector = ImageVector.Builder(
 @Composable
 fun WelcomeScreen(
     viewModel: AuthViewModel = AuthViewModel(),
-    onNavigateToLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToLogin: () -> Unit
 ) {
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     val strings = getAuthStrings(selectedLanguage)
 
-    // Full green screen background
+    // Automatically navigate to Login screen after 1.5 seconds
+    LaunchedEffect(Unit) {
+        delay(1500)
+        onNavigateToLogin()
+    }
+
+    // Full green screen splash background
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,105 +72,49 @@ fun WelcomeScreen(
                     colors = listOf(GreenGradientStart, GreenGradientEnd)
                 )
             )
-            .padding(24.dp)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Center Branding Section: Shield Logo & Tagline
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(vertical = 32.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.25f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = ShieldLogoIcon,
-                        contentDescription = "CEGCT Logo",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(56.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = strings.appTitle,
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    ),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = strings.appTagline,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White.copy(alpha = 0.9f)
-                    ),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-
-            // Bottom Actions: Log in, Create account
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.25f)),
+                contentAlignment = Alignment.Center
             ) {
-                // Log in button
-                Button(
-                    onClick = onNavigateToLogin,
-                    enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF1B5E20)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = strings.login,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Create account button
-                OutlinedButton(
-                    onClick = onNavigateToRegister,
-                    enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = BorderStroke(1.5.dp, Color.White),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = strings.createAccount,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
+                Icon(
+                    imageVector = ShieldLogoIcon,
+                    contentDescription = "CEGCT Logo",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(64.dp)
+                )
             }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Text(
+                text = strings.appTitle,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                ),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = strings.appTagline,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = Color.White.copy(alpha = 0.9f)
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
         }
     }
 }

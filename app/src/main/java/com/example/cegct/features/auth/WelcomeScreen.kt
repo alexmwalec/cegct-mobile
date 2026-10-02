@@ -7,12 +7,10 @@ import com.example.cegct.features.auth.ui.WelcomeScreen
 @Composable
 fun WelcomeScreen(
     viewModel: AuthViewModel = AuthViewModel(),
-    onNavigateToLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToLogin: () -> Unit
 ) {
     WelcomeScreen(
         viewModel = viewModel,
-        onNavigateToLogin = onNavigateToLogin,
-        onNavigateToRegister = onNavigateToRegister
+        onNavigateToLogin = onNavigateToLogin
     )
 }

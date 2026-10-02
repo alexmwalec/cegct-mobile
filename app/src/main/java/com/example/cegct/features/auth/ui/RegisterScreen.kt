@@ -317,58 +317,51 @@ fun RegisterScreen(
                         .onFocusChanged { if (!it.isFocused && confirmPassword.isNotEmpty()) confirmTouched = true }
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Terms and Privacy Checkbox + Reporter Identity Protection Link
+                // Terms of Service and Privacy Policy Checkbox - In-line, box aligned with input boxes
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
                         checked = termsAccepted,
-                        onCheckedChange = { termsAccepted = it }
+                        onCheckedChange = { termsAccepted = it },
+                        colors = CheckboxDefaults.colors(checkedColor = GreenPrimary),
+                        modifier = Modifier.offset(x = (-12).dp) // Align checkbox box border with input field edge
                     )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.offset(x = (-12).dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = strings.agreeTermsPrefix,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = strings.termsOfService,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = GreenPrimary
-                                ),
-                                modifier = Modifier.clickable { showPrivacyDialog = true }
-                            )
-                            Text(
-                                text = strings.and,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = strings.privacyPolicy,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = GreenPrimary
-                                ),
-                                modifier = Modifier.clickable { showPrivacyDialog = true }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "(${strings.identityProtectionNotice})",
-                            style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                            text = strings.agreeTermsPrefix,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = strings.termsOfService,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = GreenPrimary
+                            ),
+                            modifier = Modifier.clickable { showPrivacyDialog = true }
+                        )
+                        Text(
+                            text = strings.and,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = strings.privacyPolicy,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = GreenPrimary
+                            ),
                             modifier = Modifier.clickable { showPrivacyDialog = true }
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Main Create Account Button
                 Button(

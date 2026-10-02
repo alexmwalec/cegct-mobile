@@ -53,10 +53,10 @@ private val EyeIcon: ImageVector = ImageVector.Builder(
 
 private val EyeOffIcon: ImageVector = ImageVector.Builder(
     name = "EyeOff",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
+    defaultWidth = 18.dp,
+    defaultHeight = 18.dp,
+    viewportWidth = 18f,
+    viewportHeight = 18f
 ).apply {
     path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
         moveTo(1f, 1f)
@@ -162,7 +162,6 @@ fun LoginScreen(
             // Green curved header
             GreenCurvedHeader(
                 title = strings.loginHeaderTitle,
-                subtitle = strings.loginHeaderSubtitle,
                 onBack = onBack
             )
 
@@ -170,7 +169,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+
             ) {
                 // Display generic auth error if present
                 if (authError != null) {
@@ -241,6 +240,7 @@ fun LoginScreen(
                             Icon(
                                 imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password"
+
                             )
                         }
                     },
@@ -264,6 +264,7 @@ fun LoginScreen(
                                 passwordTouched = true
                             }
                         }
+
                 )
 
                 // Forgot Password sits right under the password field

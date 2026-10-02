@@ -1,7 +1,9 @@
 package com.example.cegct
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import com.example.cegct.features.auth.ForgotPasswordScreen
+import com.example.cegct.features.auth.ResetPasswordScreen
 import com.example.cegct.features.auth.ui.AuthViewModel
 import com.example.cegct.features.auth.ui.LoginScreen
 import com.example.cegct.features.auth.ui.RegisterScreen
@@ -15,6 +17,7 @@ enum class AuthScreenState {
     SIGNUP,
     VERIFY_EMAIL,
     FORGOT_PASSWORD,
+    RESET_PASSWORD,
     HOME
 }
 
@@ -22,49 +25,84 @@ enum class AuthScreenState {
 fun CegctApp(
     viewModel: AuthViewModel = remember { AuthViewModel() }
 ) {
-    var currentScreen by remember { mutableStateOf(AuthScreenState.WELCOME) }
+    val backStack = remember { mutableStateListOf(AuthScreenState.WELCOME) }
+    val currentScreen = backStack.lastOrNull() ?: AuthScreenState.WELCOME
     var registeredEmail by remember { mutableStateOf("namadinga@example.com") }
+
+    fun navigateTo(screen: AuthScreenState) {
+        if (backStack.lastOrNull() != screen) {
+            backStack.add(screen)
+        }
+    }
+
+    fun navigateBack() {
+        if (backStack.size > 1) {
+            backStack.removeAt(backStack.lastIndex)
+        }
+    }
+
+    // Intercept phone hardware/gesture back button so user navigates back instead of exiting app
+    BackHandler(enabled = backStack.size > 1) {
+        navigateBack()
+    }
 
     when (currentScreen) {
         AuthScreenState.WELCOME -> {
             WelcomeScreen(
                 viewModel = viewModel,
-                onNavigateToLogin = { currentScreen = AuthScreenState.LOGIN },
-                onNavigateToRegister = { currentScreen = AuthScreenState.SIGNUP }
+                onNavigateToLogin = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.LOGIN)
+                }
             )
         }
         AuthScreenState.LOGIN -> {
             LoginScreen(
                 viewModel = viewModel,
-                onLoginSuccess = { currentScreen = AuthScreenState.HOME },
-                onNavigateToForgotPassword = { currentScreen = AuthScreenState.FORGOT_PASSWORD },
-                onNavigateToRegister = { currentScreen = AuthScreenState.SIGNUP },
-                onBack = { currentScreen = AuthScreenState.WELCOME }
+                onLoginSuccess = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.HOME)
+                },
+                onNavigateToForgotPassword = { navigateTo(AuthScreenState.FORGOT_PASSWORD) },
+                onNavigateToRegister = { navigateTo(AuthScreenState.SIGNUP) },
+                onBack = { navigateBack() }
             )
         }
         AuthScreenState.SIGNUP -> {
             RegisterScreen(
                 viewModel = viewModel,
                 onRegisterSuccess = {
-                    currentScreen = AuthScreenState.VERIFY_EMAIL
+                    navigateTo(AuthScreenState.VERIFY_EMAIL)
                 },
-                onNavigateToLogin = { currentScreen = AuthScreenState.LOGIN },
-                onBack = { currentScreen = AuthScreenState.WELCOME }
+                onNavigateToLogin = { navigateTo(AuthScreenState.LOGIN) },
+                onBack = { navigateBack() }
             )
         }
         AuthScreenState.VERIFY_EMAIL -> {
             VerifyEmailScreen(
                 emailAddress = registeredEmail,
                 viewModel = viewModel,
-                onVerifySuccess = { currentScreen = AuthScreenState.HOME },
-                onChangeEmail = { currentScreen = AuthScreenState.SIGNUP }
+                onVerifySuccess = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.HOME)
+                },
+                onChangeEmail = { navigateBack() }
             )
         }
         AuthScreenState.FORGOT_PASSWORD -> {
             ForgotPasswordScreen(
                 viewModel = viewModel,
-                onResetRequested = { currentScreen = AuthScreenState.LOGIN },
-                onBack = { currentScreen = AuthScreenState.LOGIN }
+                onResetRequested = { navigateTo(AuthScreenState.RESET_PASSWORD) },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.RESET_PASSWORD -> {
+            ResetPasswordScreen(
+                viewModel = viewModel,
+                onResetSuccess = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.LOGIN)
+                }
             )
         }
         AuthScreenState.HOME -> {
@@ -72,7 +110,10 @@ fun CegctApp(
                 onNavigateToReport = {},
                 onNavigateToMyReports = {},
                 onNavigateToMap = {},
-                onNavigateToProfile = { currentScreen = AuthScreenState.WELCOME }
+                onNavigateToProfile = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.WELCOME)
+                }
             )
         }
     }
