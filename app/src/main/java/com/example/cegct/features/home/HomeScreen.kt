@@ -22,6 +22,7 @@ import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
 import com.example.cegct.ui.theme.GreenPrimary
 
+
 // Nav Icons
 private val HomeNavIcon: ImageVector = ImageVector.Builder("HomeNav", 24.dp, 24.dp, 24f, 24f).apply {
     path(fill = SolidColor(GreenPrimary)) {
@@ -103,7 +104,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         bottomBar = {
-            // Navigation Bar: Home, Report (+ sign), Nearby Reports, Profile
+            // Navigation Bar: Home, Report (+ sign), and  Profile
             NavigationBar(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
@@ -129,12 +130,6 @@ fun HomeScreen(
                         }
                     },
                     label = { Text("Report", fontWeight = FontWeight.Bold, color = GreenPrimary) }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToMap,
-                    icon = { Icon(MapNavIcon, contentDescription = "Nearby Reports") },
-                    label = { Text("Nearby Reports") }
                 )
                 NavigationBarItem(
                     selected = false,
@@ -172,7 +167,7 @@ fun HomeScreen(
                             Text("🌍", style = MaterialTheme.typography.titleLarge)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "CEGCT Mobile",
+                                text = "CEGCT",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                                 color = Color.White
                             )
@@ -186,7 +181,7 @@ fun HomeScreen(
                                 .background(Color.White.copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("🔔", color = Color.White)
+                            Text("", color = Color.White)
                         }
                     }
 
@@ -214,16 +209,27 @@ fun HomeScreen(
                         color = Color.White.copy(alpha = 0.9f)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
+            Spacer(modifier = Modifier.height(30.dp))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                // 2x2 Grid Cards: My Reports, Nearby Reports, Impacts, Community
+
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            )
+            {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -269,7 +275,7 @@ fun HomeScreen(
                             }
                         }
 
-                        // 2. Nearby Reports (renamed from Map)
+                        // 2. Nearby Reports
                         Card(
                             onClick = onNavigateToMap,
                             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -309,6 +315,8 @@ fun HomeScreen(
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -394,52 +402,7 @@ fun HomeScreen(
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Bottom Card: Offline Evidence Vault
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFFFF8E1)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("📁", style = MaterialTheme.typography.titleMedium)
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column {
-                                Text(
-                                    text = "📁 Offline Evidence Vault",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                                )
-                                Text(
-                                    text = "View saved reports waiting to sync",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Gray
-                                )
-                            }
-                        }
-
-                        Text("🔄", style = MaterialTheme.typography.titleMedium)
-                    }
                 }
             }
         }
