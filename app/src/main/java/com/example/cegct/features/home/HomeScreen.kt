@@ -1,7 +1,6 @@
 package com.example.cegct.features.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,16 +22,100 @@ import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
 import com.example.cegct.ui.theme.GreenPrimary
 
-data class CommunityUpdateItem(
-    val title: String,
-    val description: String,
-    val category: String,
-    val status: String,
-    val statusColor: Color,
-    val timeAgo: String,
-    val views: String,
-    val supports: String
-)
+// Material Vector Icons for Cards
+private val AssignmentIcon: ImageVector = ImageVector.Builder("Assignment", 24.dp, 24.dp, 24f, 24f).apply {
+    path(fill = SolidColor(GreenPrimary)) {
+        moveTo(19f, 3f)
+        lineTo(14.82f, 3f)
+        curveTo(14.4f, 1.84f, 13.3f, 1f, 12f, 1f)
+        curveTo(10.7f, 1f, 9.6f, 1.84f, 9.18f, 3f)
+        lineTo(5f, 3f)
+        curveTo(3.9f, 3f, 3f, 3.9f, 3f, 5f)
+        lineTo(3f, 19f)
+        curveTo(3f, 20.1f, 3.9f, 21f, 5f, 21f)
+        lineTo(19f, 21f)
+        curveTo(20.1f, 21f, 21f, 20.1f, 21f, 19f)
+        lineTo(21f, 5f)
+        curveTo(21f, 3.9f, 20.1f, 3f, 19f, 3f)
+        close()
+        moveTo(12f, 3f)
+        curveTo(12.55f, 3f, 13f, 3.45f, 13f, 4f)
+        curveTo(13f, 4.55f, 12.55f, 5f, 12f, 5f)
+        curveTo(11.45f, 5f, 11f, 4.55f, 11f, 4f)
+        curveTo(11f, 3.45f, 11.45f, 3f, 12f, 3f)
+        close()
+        moveTo(14f, 17f)
+        lineTo(7f, 17f)
+        lineTo(7f, 15f)
+        lineTo(14f, 15f)
+        close()
+        moveTo(17f, 13f)
+        lineTo(7f, 13f)
+        lineTo(7f, 11f)
+        lineTo(17f, 11f)
+        close()
+    }
+}.build()
+
+private val MapLocationIcon: ImageVector = ImageVector.Builder("MapLocation", 24.dp, 24.dp, 24f, 24f).apply {
+    path(fill = SolidColor(Color(0xFF0288D1))) {
+        moveTo(12f, 2f)
+        curveTo(8.13f, 2f, 5f, 5.13f, 5f, 9f)
+        curveTo(5f, 14.25f, 12f, 22f, 12f, 22f)
+        curveTo(12f, 22f, 19f, 14.25f, 19f, 9f)
+        curveTo(19f, 5.13f, 15.87f, 2f, 12f, 2f)
+        close()
+        moveTo(12f, 11.5f)
+        curveTo(10.62f, 11.5f, 9.5f, 10.38f, 9.5f, 9f)
+        curveTo(9.5f, 7.62f, 10.62f, 6.5f, 12f, 6.5f)
+        curveTo(13.38f, 6.5f, 14.5f, 7.62f, 14.5f, 9f)
+        curveTo(14.5f, 10.38f, 13.38f, 11.5f, 12f, 11.5f)
+        close()
+    }
+}.build()
+
+private val BarChartIcon: ImageVector = ImageVector.Builder("BarChart", 24.dp, 24.dp, 24f, 24f).apply {
+    path(fill = SolidColor(Color(0xFF00796B))) {
+        moveTo(5f, 9.2f)
+        lineTo(9f, 9.2f)
+        lineTo(9f, 19f)
+        lineTo(5f, 19f)
+        close()
+        moveTo(11f, 5f)
+        lineTo(15f, 5f)
+        lineTo(15f, 19f)
+        lineTo(11f, 19f)
+        close()
+        moveTo(17f, 13f)
+        lineTo(21f, 13f)
+        lineTo(21f, 19f)
+        lineTo(17f, 19f)
+        close()
+    }
+}.build()
+
+private val PeopleGroupIcon: ImageVector = ImageVector.Builder("PeopleGroup", 24.dp, 24.dp, 24f, 24f).apply {
+    path(fill = SolidColor(Color(0xFFE65100))) {
+        moveTo(16f, 11f)
+        curveTo(17.66f, 11f, 18.99f, 9.66f, 18.99f, 8f)
+        curveTo(18.99f, 6.34f, 17.66f, 5f, 16f, 5f)
+        curveTo(14.34f, 5f, 13f, 6.34f, 13f, 8f)
+        curveTo(13f, 9.66f, 14.34f, 11f, 16f, 11f)
+        close()
+        moveTo(8f, 11f)
+        curveTo(9.66f, 11f, 10.99f, 9.66f, 10.99f, 8f)
+        curveTo(10.99f, 6.34f, 9.66f, 5f, 8f, 5f)
+        curveTo(5f, 9.66f, 6.34f, 11f, 8f, 11f)
+        close()
+        moveTo(8f, 13f)
+        curveTo(5.33f, 13f, 0f, 14.34f, 0f, 17f)
+        lineTo(0f, 19f)
+        lineTo(16f, 19f)
+        lineTo(16f, 17f)
+        curveTo(16f, 14.34f, 10.67f, 13f, 8f, 13f)
+        close()
+    }
+}.build()
 
 // Nav Icons
 private val HomeNavIcon: ImageVector = ImageVector.Builder("HomeNav", 24.dp, 24.dp, 24f, 24f).apply {
@@ -52,36 +135,6 @@ private val HomeNavIcon: ImageVector = ImageVector.Builder("HomeNav", 24.dp, 24.
     }
 }.build()
 
-private val TrackerNavIcon: ImageVector = ImageVector.Builder("TrackerNav", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = SolidColor(Color.Gray)) {
-        moveTo(19f, 3f)
-        lineTo(5f, 3f)
-        curveTo(3.9f, 3f, 3f, 3.9f, 3f, 5f)
-        lineTo(3f, 19f)
-        curveTo(3f, 20.1f, 3.9f, 21f, 5f, 21f)
-        lineTo(19f, 21f)
-        curveTo(20.1f, 21f, 21f, 20.1f, 21f, 19f)
-        lineTo(21f, 5f)
-        curveTo(21f, 3.9f, 20.1f, 3f, 19f, 3f)
-        close()
-        moveTo(14f, 17f)
-        lineTo(7f, 17f)
-        lineTo(7f, 15f)
-        lineTo(14f, 15f)
-        close()
-        moveTo(17f, 13f)
-        lineTo(7f, 13f)
-        lineTo(7f, 11f)
-        lineTo(17f, 11f)
-        close()
-        moveTo(17f, 9f)
-        lineTo(7f, 9f)
-        lineTo(7f, 7f)
-        lineTo(17f, 7f)
-        close()
-    }
-}.build()
-
 private val PlusNavIcon: ImageVector = ImageVector.Builder("PlusNav", 24.dp, 24.dp, 24f, 24f).apply {
     path(fill = SolidColor(Color.White)) {
         moveTo(19f, 13f)
@@ -96,23 +149,6 @@ private val PlusNavIcon: ImageVector = ImageVector.Builder("PlusNav", 24.dp, 24.
         lineTo(13f, 5f)
         lineTo(13f, 11f)
         lineTo(19f, 11f)
-        close()
-    }
-}.build()
-
-private val MapNavIcon: ImageVector = ImageVector.Builder("MapNav", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = SolidColor(Color.Gray)) {
-        moveTo(12f, 2f)
-        curveTo(8.13f, 2f, 5f, 5.13f, 5f, 9f)
-        curveTo(5f, 14.25f, 12f, 22f, 12f, 22f)
-        curveTo(12f, 22f, 19f, 14.25f, 19f, 9f)
-        curveTo(19f, 5.13f, 15.87f, 2f, 12f, 2f)
-        close()
-        moveTo(12f, 11.5f)
-        curveTo(10.62f, 11.5f, 9.5f, 10.38f, 9.5f, 9f)
-        curveTo(9.5f, 7.62f, 10.62f, 6.5f, 12f, 6.5f)
-        curveTo(13.38f, 6.5f, 14.5f, 7.62f, 14.5f, 9f)
-        curveTo(14.5f, 10.38f, 13.38f, 11.5f, 12f, 11.5f)
         close()
     }
 }.build()
@@ -140,35 +176,12 @@ fun HomeScreen(
     onNavigateToReport: (String) -> Unit,
     onNavigateToMyReports: () -> Unit,
     onNavigateToMap: () -> Unit,
+    onNavigateToImpacts: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    val communityUpdates = remember {
-        listOf(
-            CommunityUpdateItem(
-                title = "Illegal Dumping Near Riverside",
-                description = "Uncontrolled garbage heap near Kanudi Road, Sector 4.",
-                category = "Illegal Dumping",
-                status = "Under Review",
-                statusColor = Color(0xFFFB8C00),
-                timeAgo = "2 hours ago",
-                views = "34 views",
-                supports = "12 supports"
-            ),
-            CommunityUpdateItem(
-                title = "Factory Smoke Pollution - Blocked",
-                description = "Black smoke discharge from industrial chimney.",
-                category = "Air Pollution",
-                status = "Resolved",
-                statusColor = Color(0xFF2E7D32),
-                timeAgo = "1 day ago",
-                views = "89 views",
-                supports = "28 supports"
-            )
-        )
-    }
-
     Scaffold(
         bottomBar = {
+            // Navigation Bar: Home, Report (+ sign), Nearby Reports, Profile
             NavigationBar(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
@@ -181,17 +194,11 @@ fun HomeScreen(
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = onNavigateToMyReports,
-                    icon = { Icon(TrackerNavIcon, contentDescription = "Tracker") },
-                    label = { Text("Tracker") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { onNavigateToReport("Illegal Dumping") },
+                    onClick = { onNavigateToReport("Illegal dumping") },
                     icon = {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(GreenPrimary),
                             contentAlignment = Alignment.Center
@@ -200,12 +207,6 @@ fun HomeScreen(
                         }
                     },
                     label = { Text("Report", fontWeight = FontWeight.Bold, color = GreenPrimary) }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onNavigateToMap,
-                    icon = { Icon(MapNavIcon, contentDescription = "Nearby") },
-                    label = { Text("Nearby") }
                 )
                 NavigationBarItem(
                     selected = false,
@@ -222,7 +223,7 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header Banner Screen 2
+            // Top Green Curved Header Banner
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -240,31 +241,16 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.25f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("A", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Welcome back",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.85f)
-                                )
-                                Text(
-                                    text = "Good Morning, Amara 👋",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = Color.White
-                                )
-                            }
+                            Text("🌍", style = MaterialTheme.typography.titleLarge)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "CEGCT",
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                                color = Color.White
+                            )
                         }
 
-                        // Notification Bell Icon with Badge
+                        // Notification Bell Icon
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -276,296 +262,246 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    // Active Status Summary Card
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.2f)),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "⚡ Update on your report #2024-031",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = "Authorities are now reviewing your submission",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.9f)
-                                )
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color.White,
-                                contentColor = GreenPrimary
-                            ) {
-                                Text(
-                                    text = "4 Total",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    }
+                    Text(
+                        text = "Empowering you to heal the Planet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = "Good night, Alex Mwale 👋",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "What would you like to do?",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
-            // Quick Actions 2x2 Grid
+            Spacer(modifier = Modifier.height(30.dp))
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding   (horizontal = 20.dp)
             ) {
                 Text(
-                    text = "Quick Actions",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "Quick Action",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.Black,
+
+                    )
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Card 1: Report Incident (Primary Green)
-                    Card(
-                        onClick = { onNavigateToReport("Illegal Dumping") },
-                        colors = CardDefaults.cardColors(containerColor = GreenPrimary),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(110.dp)
+                // 2x2 Grid Cards with Material Vector Icons
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Column(
+                        // 1. My Reports
+                        Card(
+                            onClick = onNavigateToMyReports,
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .weight(1f)
+                                .height(130.dp)
                         ) {
-                            Text("📢", style = MaterialTheme.typography.titleLarge)
-                            Column {
-                                Text(
-                                    text = "Report Incident",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = "File a new grievance",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.85f)
-                                )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE8F5E9)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = AssignmentIcon,
+                                        contentDescription = "My Reports",
+                                        tint = GreenPrimary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = "My Reports",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Track report status",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        }
+
+                        // 2. Nearby Reports
+                        Card(
+                            onClick = onNavigateToMap,
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(130.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE0F2F1)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = MapLocationIcon,
+                                        contentDescription = "Nearby Reports",
+                                        tint = Color(0xFF0288D1),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = "Nearby Reports",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Heatmap & reports",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
+                                    )
+                                }
                             }
                         }
                     }
 
-                    // Card 2: My Reports
-                    Card(
-                        onClick = onNavigateToMyReports,
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(110.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Column(
+                        // 3. Impacts
+                        Card(
+                            onClick = onNavigateToImpacts,
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .weight(1f)
+                                .height(130.dp)
                         ) {
-                            Text("📋", style = MaterialTheme.typography.titleLarge)
-                            Column {
-                                Text(
-                                    text = "My Reports",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Track submissions →",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = GreenPrimary
-                                )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE0F2F1)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = BarChartIcon,
+                                        contentDescription = "Impacts",
+                                        tint = Color(0xFF00796B),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = "Impacts",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Know your contributions",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
+                                    )
+                                }
                             }
                         }
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Card 3: Nearby Reports
-                    Card(
-                        onClick = onNavigateToMap,
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F2F1)),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(110.dp)
-                    ) {
-                        Column(
+                        // 4. Community
+                        Card(
+                            onClick = { },
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .weight(1f)
+                                .height(130.dp)
                         ) {
-                            Text("📍", style = MaterialTheme.typography.titleLarge)
-                            Column {
-                                Text(
-                                    text = "Nearby Reports",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "View local issues →",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = GreenPrimary
-                                )
-                            }
-                        }
-                    }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFFFF3E0)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = PeopleGroupIcon,
+                                        contentDescription = "Community",
+                                        tint = Color(0xFFE65100),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
 
-                    // Card 4: Contact Authority
-                    Card(
-                        onClick = onNavigateToProfile,
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0)),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(110.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("💬", style = MaterialTheme.typography.titleLarge)
-                            Column {
-                                Text(
-                                    text = "Contact Authority",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Send a message →",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color(0xFFE65100)
-                                )
+                                Column {
+                                    Text(
+                                        text = "Community",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Connect & invite",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Community Updates Section
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Community Updates",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "See all",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = GreenPrimary),
-                        modifier = Modifier.clickable { onNavigateToMyReports() }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                communityUpdates.forEach { update ->
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = GreenPrimary.copy(alpha = 0.1f)
-                                ) {
-                                    Text(
-                                        text = update.category,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = GreenPrimary,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = update.statusColor.copy(alpha = 0.15f)
-                                ) {
-                                    Text(
-                                        text = update.status,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = update.statusColor,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = update.title,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = update.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "⏱ ${update.timeAgo}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "👁 ${update.views}  •  👍 ${update.supports}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Gray
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }

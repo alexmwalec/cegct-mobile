@@ -2,20 +2,22 @@ package com.example.cegct.features.auth.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cegct.ui.theme.GreenPrimary
+import com.example.cegct.ui.theme.GreenGradientEnd
+import com.example.cegct.ui.theme.GreenGradientStart
 
 // Curved header shape with smooth bottom curve
 val HeaderCurveShape = GenericShape { size, _ ->
@@ -54,10 +56,14 @@ fun GreenCurvedHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(170.dp)
+            .height(160.dp)
             .clip(HeaderCurveShape)
-            .background(GreenPrimary)
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(GreenGradientStart, GreenGradientEnd)
+                )
+            )
+            .padding(horizontal = 20.dp, vertical = 14.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -66,7 +72,7 @@ fun GreenCurvedHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (onBack != null) {
@@ -80,21 +86,36 @@ fun GreenCurvedHeader(
                             tint = Color.White
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.width(36.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
-                Spacer(modifier = Modifier.weight(1f))
+
+                // CEGCT brand title on top-left of header
                 Text(
                     text = "CEGCT",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White.copy(alpha = 0.85f)
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Notification Bell icon on top-right
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🔔", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                }
             }
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 14.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(

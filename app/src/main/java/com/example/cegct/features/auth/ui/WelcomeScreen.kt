@@ -16,15 +16,16 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
 import kotlinx.coroutines.delay
 
-// Leaf vector icon inside circle
+// Leaf logo icon
 private val LeafLogoIcon: ImageVector = ImageVector.Builder(
     name = "LeafLogo",
-    defaultWidth = 56.dp,
-    defaultHeight = 56.dp,
+    defaultWidth = 64.dp,
+    defaultHeight = 64.dp,
     viewportWidth = 24f,
     viewportHeight = 24f
 ).apply {
@@ -51,16 +52,12 @@ fun WelcomeScreen(
     viewModel: AuthViewModel = AuthViewModel(),
     onNavigateToLogin: () -> Unit
 ) {
-    val selectedLanguage by viewModel.selectedLanguage.collectAsState()
-    val strings = getAuthStrings(selectedLanguage)
-
     // Automatically navigate to Login screen after 1.5 seconds
     LaunchedEffect(Unit) {
         delay(1500)
         onNavigateToLogin()
     }
 
-    // Full green screen splash background
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,18 +65,16 @@ fun WelcomeScreen(
                 brush = Brush.verticalGradient(
                     colors = listOf(GreenGradientStart, GreenGradientEnd)
                 )
-            )
-            .padding(24.dp),
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Circle with leaf logo
             Box(
                 modifier = Modifier
-                    .size(110.dp)
+                    .size(120.dp)
                     .clip(CircleShape)
                     .background(Color.White),
                 contentAlignment = Alignment.Center
@@ -88,30 +83,20 @@ fun WelcomeScreen(
                     imageVector = LeafLogoIcon,
                     contentDescription = "CEGCT Leaf Logo",
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(72.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
             Text(
-                text = strings.appTitle,
-                style = MaterialTheme.typography.headlineLarge.copy(
+                text = "CEGCT",
+                style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
+                    color = Color.White,
+                    letterSpacing = 2.sp
                 ),
                 textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = strings.appTagline,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.White.copy(alpha = 0.9f)
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
             )
         }
     }

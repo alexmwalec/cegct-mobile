@@ -139,8 +139,9 @@ fun ReportScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
+            // Header having title "Report Issue", CEGCT on left as same as in Homepage
             GreenCurvedHeader(
-                title = "Report an Issue",
+                title = "Report Issue",
                 subtitle = "Snap evidence, select type & submit",
                 onBack = onBack
             )
@@ -246,111 +247,124 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 3. Description Field with Microphone Audio Recorder
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Description of Issue",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "${description.length}/500",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    OutlinedTextField(
-                        value = description,
-                        onValueChange = { if (it.length <= 500) description = it },
-                        placeholder = { Text("Describe what happened, severity, location landmarks...") },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(110.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Audio Voice Note Recording Action Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (isRecording) {
-                                    isRecording = false
-                                    hasVoiceNote = true
-                                } else {
-                                    isRecording = true
-                                }
-                            },
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .background(micButtonBgColor)
+                // 3. Description Card with Recording Icon INSIDE the Card
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = MicIcon,
-                                contentDescription = "Record Audio Note",
-                                tint = if (isRecording) Color.White else GreenPrimary,
-                                modifier = Modifier.size(24.dp)
+                            Text(
+                                text = "Description of Issue",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${description.length}/500",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Gray
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                        if (isRecording) {
-                            Text(
-                                text = "Recording audio... (${recordingSeconds}s) - Tap mic to stop",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFE53935)
-                                )
-                            )
-                        } else if (hasVoiceNote) {
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFE8F5E9)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                        TextField(
+                            value = description,
+                            onValueChange = { if (it.length <= 500) description = it },
+                            placeholder = { Text("Describe what happened, severity, location landmarks...") },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(90.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Audio Recording Action Row INSIDE Description Card
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isRecording) Color(0xFFFFEBEE) else Color(0xFFF5F5F5))
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(
+                                    onClick = {
+                                        if (isRecording) {
+                                            isRecording = false
+                                            hasVoiceNote = true
+                                        } else {
+                                            isRecording = true
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(micButtonBgColor)
                                 ) {
+                                    Icon(
+                                        imageVector = MicIcon,
+                                        contentDescription = "Record Voice Note",
+                                        tint = if (isRecording) Color.White else GreenPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                if (isRecording) {
                                     Text(
-                                        text = "Voice Note Attached (${recordingSeconds}s)",
+                                        text = "Recording... (${recordingSeconds}s) - Tap mic to stop",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = GreenPrimary
+                                            color = Color(0xFFE53935)
                                         )
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                } else if (hasVoiceNote) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Voice Note Attached (${recordingSeconds}s)",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = GreenPrimary
+                                            )
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "✕",
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                            color = Color.Gray,
+                                            modifier = Modifier.clickable {
+                                                hasVoiceNote = false
+                                                recordingSeconds = 0
+                                            }
+                                        )
+                                    }
+                                } else {
                                     Text(
-                                        text = "✕",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                        color = Color.Gray,
-                                        modifier = Modifier.clickable {
-                                            hasVoiceNote = false
-                                            recordingSeconds = 0
-                                        }
+                                        text = "Tap microphone inside card to record voice note",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
                                     )
                                 }
                             }
-                        } else {
-                            Text(
-                                text = "Tap microphone for voice description",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
                         }
                     }
                 }
