@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -153,6 +152,46 @@ private val PlusNavIcon: ImageVector = ImageVector.Builder("PlusNav", 24.dp, 24.
     }
 }.build()
 
+private val DarkGreenHeader = Color(0xFF185835)
+
+private val NotificationIcon: ImageVector = ImageVector.Builder(
+    name = "Notifications",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(Color(0xFF1A1A1A))) {
+        moveTo(12f, 22f)
+        curveTo(13.1f, 22f, 14f, 21.1f, 14f, 20f)
+        lineTo(10f, 20f)
+        curveTo(10f, 21.1f, 10.89f, 22f, 12f, 22f)
+        close()
+        moveTo(18f, 16f)
+        lineTo(18f, 11f)
+        curveTo(18f, 7.93f, 16.36f, 5.36f, 13.5f, 4.68f)
+        lineTo(13.5f, 4f)
+        curveTo(13.5f, 3.17f, 12.83f, 2.5f, 12f, 2.5f)
+        curveTo(11.17f, 2.5f, 10.5f, 3.17f, 10.5f, 4f)
+        lineTo(10.5f, 4.68f)
+        curveTo(7.63f, 5.36f, 6f, 7.92f, 6f, 11f)
+        lineTo(6f, 16f)
+        lineTo(4f, 18f)
+        lineTo(4f, 19f)
+        lineTo(20f, 19f)
+        lineTo(20f, 18f)
+        lineTo(18f, 16f)
+        close()
+        moveTo(16f, 17f)
+        lineTo(8f, 17f)
+        lineTo(8f, 11f)
+        curveTo(8f, 8.52f, 9.51f, 6.5f, 12f, 6.5f)
+        curveTo(14.49f, 6.5f, 16f, 8.52f, 16f, 11f)
+        lineTo(16f, 17f)
+        close()
+    }
+}.build()
+
 private val ProfileNavIcon: ImageVector = ImageVector.Builder("ProfileNav", 24.dp, 24.dp, 24f, 24f).apply {
     path(fill = SolidColor(Color.Gray)) {
         moveTo(12f, 12f)
@@ -224,17 +263,17 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Top Green Curved Header Banner
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(GreenGradientStart, GreenGradientEnd)
-                        )
-                    )
-                    .padding(20.dp)
+            Surface(
+                color = DarkGreenHeader,
+                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(20.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -250,15 +289,20 @@ fun HomeScreen(
                             )
                         }
 
-                        // Notification Bell Icon
+                        // Notification Bell Icon (matching Report page)
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f)),
+                                .background(Color(0xFF8BAA9B)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("🔔", color = Color.White)
+                            Icon(
+                                imageVector = NotificationIcon,
+                                contentDescription = "Notifications",
+                                tint = Color(0xFF1A1A1A),
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
                     }
 
@@ -501,7 +545,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
     }

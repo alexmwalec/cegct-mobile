@@ -52,10 +52,10 @@ private val EyeIcon: ImageVector = ImageVector.Builder(
 
 private val EyeOffIcon: ImageVector = ImageVector.Builder(
     name = "EyeOffReg",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
+    defaultWidth = 18.dp,
+    defaultHeight = 18.dp,
+    viewportWidth = 18f,
+    viewportHeight = 18f
 ).apply {
     path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
         moveTo(1f, 1f)
@@ -135,6 +135,7 @@ fun RegisterScreen(
             GreenCurvedHeader(
                 title = strings.registerHeaderTitle,
                 subtitle = strings.registerHeaderSubtitle,
+                showNotificationBell = false,
                 onBack = onBack
             )
 
