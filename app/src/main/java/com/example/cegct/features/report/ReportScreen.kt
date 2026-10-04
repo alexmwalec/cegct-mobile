@@ -496,7 +496,7 @@ fun ReportScreen(
                 // 4. GPS Pinpoint Location Card (Location Pin Icon - Compact Size)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(13.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     modifier = Modifier
                         .fillMaxWidth()

@@ -31,8 +31,6 @@ import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
 
 private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBackground = Color(0xFFE5F0EE)
-private val FieldBackground = Color(0xFFF2F2F2)
-private val LabelTextColor = Color(0xFF1A1A1A)
 
 private val EyeIcon: ImageVector = ImageVector.Builder(
     name = "Eye",
@@ -41,7 +39,7 @@ private val EyeIcon: ImageVector = ImageVector.Builder(
     viewportWidth = 24f,
     viewportHeight = 24f
 ).apply {
-    path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
+    path(fill = null, stroke = SolidColor(Color(0xFF555555)), strokeLineWidth = 2f) {
         moveTo(1f, 12f)
         curveTo(1f, 12f, 5f, 4f, 12f, 4f)
         curveTo(12f, 4f, 19f, 4f, 23f, 12f)
@@ -64,7 +62,7 @@ private val EyeOffIcon: ImageVector = ImageVector.Builder(
     viewportWidth = 18f,
     viewportHeight = 18f
 ).apply {
-    path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
+    path(fill = null, stroke = SolidColor(Color(0xFF555555)), strokeLineWidth = 2f) {
         moveTo(1f, 1f)
         lineTo(23f, 23f)
         moveTo(10.5f, 10.5f)
@@ -166,21 +164,22 @@ fun LoginScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header with CEGCT Logo, Title and Subtitle (No back arrow, no Welcome)
+            // Header with CEGCT Logo & Name
             GreenCurvedHeader(
                 title = strings.loginHeaderTitle,
-                subtitle = "Empowering you to heal the Planet",
+                subtitle = "",
                 showNotificationBell = false,
                 showBackArrow = false
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(47.dp))
 
-            // White Form Card
+            // White Form Card with Elevated Border
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -188,7 +187,7 @@ fun LoginScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(20.dp)
                 ) {
                     if (authError != null) {
                         Card(
@@ -206,24 +205,19 @@ fun LoginScreen(
                         }
                     }
 
-                    // Email Field
-                    Text(
-                        text = strings.emailLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        ),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // 1. Email Input Field
+                    OutlinedTextField(
                         value = email,
                         onValueChange = {
                             email = it
                             if (!emailTouched && it.length > 3) emailTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("example@gmail.com", color = Color(0xFF888888)) },
+                        label = { Text(strings.emailLabel) },
+                        placeholder = { Text("example@gmail.com") },
                         isError = emailErrorText != null,
                         supportingText = {
                             if (emailErrorText != null) {
@@ -231,15 +225,16 @@ fun LoginScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Email,
@@ -248,7 +243,6 @@ fun LoginScreen(
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { focusState ->
                                 if (!focusState.isFocused && email.isNotEmpty()) {
                                     emailTouched = true
@@ -256,26 +250,18 @@ fun LoginScreen(
                             }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // Password Field
-                    Text(
-                        text = strings.passwordLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        ),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
+                    // 2. Password Input Field
+                    OutlinedTextField(
                         value = password,
                         onValueChange = {
                             password = it
                             if (!passwordTouched && it.length > 2) passwordTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("••••••••", color = Color(0xFF888888)) },
+                        label = { Text(strings.passwordLabel) },
+                        placeholder = { Text("••••••••") },
                         isError = passwordErrorText != null,
                         supportingText = {
                             if (passwordErrorText != null) {
@@ -283,22 +269,24 @@ fun LoginScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = Color(0xFF555555)
                                 )
                             }
                         },
@@ -317,7 +305,6 @@ fun LoginScreen(
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { focusState ->
                                 if (!focusState.isFocused && password.isNotEmpty()) {
                                     passwordTouched = true
@@ -325,7 +312,7 @@ fun LoginScreen(
                             }
                     )
 
-                    // Forgot Password
+                    // Forgot Password link
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -341,7 +328,7 @@ fun LoginScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     // Log In Button
                     Button(
@@ -355,7 +342,7 @@ fun LoginScreen(
                         enabled = !isLoading && email.isNotBlank() && password.isNotBlank(),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(54.dp),
+                            .height(52.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = DarkGreenHeader,
                             contentColor = Color.White,
@@ -392,14 +379,14 @@ fun LoginScreen(
                         Text(
                             text = "  Or login with  ",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color(0xFF666666)
                         )
                         HorizontalDivider(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Google Login
+                    // Google Login Button
                     OutlinedButton(
                         onClick = {
                             viewModel.loginWithGoogle(onLoginSuccess)
@@ -409,7 +396,7 @@ fun LoginScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Color.LightGray)
+                        border = BorderStroke(1.dp, Color(0xFFCCCCCC))
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -424,15 +411,17 @@ fun LoginScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = strings.continueWithGoogle,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                                color = LabelTextColor
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF111111)
+                                )
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Sign Up link
+                    // Don't have an account? Sign Up
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -441,7 +430,7 @@ fun LoginScreen(
                         Text(
                             text = "Don't have an account? ",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color(0xFF666666)
                         )
                         Text(
                             text = "Sign Up",

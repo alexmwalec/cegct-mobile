@@ -1,6 +1,7 @@
 package com.example.cegct.features.auth.ui
 
 import android.util.Patterns
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,8 +31,6 @@ import com.example.cegct.features.auth.ui.components.PrivacyPolicyDialog
 
 private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBackground = Color(0xFFE5F0EE)
-private val FieldBackground = Color(0xFFF2F2F2)
-private val LabelTextColor = Color(0xFF1A1A1A)
 
 private val EyeIcon: ImageVector = ImageVector.Builder(
     name = "EyeReg",
@@ -40,7 +39,7 @@ private val EyeIcon: ImageVector = ImageVector.Builder(
     viewportWidth = 24f,
     viewportHeight = 24f
 ).apply {
-    path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
+    path(fill = null, stroke = SolidColor(Color(0xFF555555)), strokeLineWidth = 2f) {
         moveTo(1f, 12f)
         curveTo(1f, 12f, 5f, 4f, 12f, 4f)
         curveTo(12f, 4f, 19f, 4f, 23f, 12f)
@@ -63,7 +62,7 @@ private val EyeOffIcon: ImageVector = ImageVector.Builder(
     viewportWidth = 18f,
     viewportHeight = 18f
 ).apply {
-    path(fill = null, stroke = SolidColor(Color.Gray), strokeLineWidth = 2f) {
+    path(fill = null, stroke = SolidColor(Color(0xFF555555)), strokeLineWidth = 2f) {
         moveTo(1f, 1f)
         lineTo(23f, 23f)
         moveTo(10.5f, 10.5f)
@@ -139,17 +138,18 @@ fun RegisterScreen(
         ) {
             GreenCurvedHeader(
                 title = strings.registerHeaderTitle,
-                subtitle = "Empowering you to heal the Planet",
                 showNotificationBell = false,
                 showBackArrow = false
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // White Form Card with Elevated Border
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -157,7 +157,7 @@ fun RegisterScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(20.dp)
                 ) {
                     if (authError != null) {
                         Card(
@@ -175,21 +175,35 @@ fun RegisterScreen(
                         }
                     }
 
-                    // 1. Full Name
                     Text(
-                        text = strings.fullNameLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                        color = LabelTextColor
+                        text = "Create Account 🌿",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        ),
+                        color = Color(0xFF111111)
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    TextField(
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Fill in your details to create a citizen account",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                        color = Color(0xFF666666)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // 1. Full Name
+                    OutlinedTextField(
                         value = fullName,
                         onValueChange = {
                             fullName = it
                             if (!nameTouched) nameTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("Alex C Mwale", color = Color(0xFF888888)) },
+                        label = { Text(strings.fullNameLabel) },
+                        placeholder = { Text("Alex C Mwale") },
                         isError = nameErrorText != null,
                         supportingText = {
                             if (nameErrorText != null) {
@@ -197,41 +211,36 @@ fun RegisterScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { if (!it.isFocused && fullName.isNotEmpty()) nameTouched = true }
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 2. Email Address
-                    Text(
-                        text = strings.emailLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = email,
                         onValueChange = {
                             email = it
                             if (!emailTouched) emailTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("example@gmail.com", color = Color(0xFF888888)) },
+                        label = { Text(strings.emailLabel) },
+                        placeholder = { Text("example@gmail.com") },
                         isError = emailErrorText != null,
                         supportingText = {
                             if (emailErrorText != null) {
@@ -239,41 +248,36 @@ fun RegisterScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { if (!it.isFocused && email.isNotEmpty()) emailTouched = true }
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 3. Phone Number
-                    Text(
-                        text = strings.phoneNumberLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = phone,
                         onValueChange = {
                             phone = it
                             if (!phoneTouched) phoneTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("0991234567", color = Color(0xFF888888)) },
+                        label = { Text(strings.phoneNumberLabel) },
+                        placeholder = { Text("0991234567") },
                         isError = phoneErrorText != null,
                         supportingText = {
                             if (phoneErrorText != null) {
@@ -281,41 +285,36 @@ fun RegisterScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { if (!it.isFocused && phone.isNotEmpty()) phoneTouched = true }
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 4. Password
-                    Text(
-                        text = strings.passwordLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = password,
                         onValueChange = {
                             password = it
                             if (!passwordTouched) passwordTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("••••••••", color = Color(0xFF888888)) },
+                        label = { Text(strings.passwordLabel) },
+                        placeholder = { Text("••••••••") },
                         isError = passwordErrorText != null,
                         supportingText = {
                             if (passwordErrorText != null) {
@@ -323,22 +322,24 @@ fun RegisterScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = Color(0xFF555555)
                                 )
                             }
                         },
@@ -346,7 +347,6 @@ fun RegisterScreen(
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { if (!it.isFocused && password.isNotEmpty()) passwordTouched = true }
                     )
 
@@ -355,23 +355,18 @@ fun RegisterScreen(
                         PasswordStrengthMeter(password = password, strings = strings)
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 5. Confirm Password
-                    Text(
-                        text = strings.confirmPasswordLabel,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                        color = LabelTextColor
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = {
                             confirmPassword = it
                             if (!confirmTouched) confirmTouched = true
                             viewModel.clearError()
                         },
-                        placeholder = { Text("••••••••", color = Color(0xFF888888)) },
+                        label = { Text(strings.confirmPasswordLabel) },
+                        placeholder = { Text("••••••••") },
                         isError = confirmErrorText != null,
                         supportingText = {
                             if (confirmErrorText != null) {
@@ -379,22 +374,24 @@ fun RegisterScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = FieldBackground,
-                            unfocusedContainerColor = FieldBackground,
-                            disabledContainerColor = FieldBackground,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            focusedTextColor = LabelTextColor,
-                            unfocusedTextColor = LabelTextColor
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFFFAFAFA),
+                            unfocusedContainerColor = Color(0xFFFAFAFA),
+                            disabledContainerColor = Color(0xFFFAFAFA),
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedTextColor = Color(0xFF111111),
+                            unfocusedTextColor = Color(0xFF111111)
                         ),
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                                 Icon(
                                     imageVector = if (confirmPasswordVisible) EyeIcon else EyeOffIcon,
-                                    contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                    contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password",
+                                    tint = Color(0xFF555555)
                                 )
                             }
                         },
@@ -402,7 +399,6 @@ fun RegisterScreen(
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
                             .onFocusChanged { if (!it.isFocused && confirmPassword.isNotEmpty()) confirmTouched = true }
                     )
 
@@ -429,12 +425,7 @@ fun RegisterScreen(
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = DarkGreenHeader),
                                 modifier = Modifier.clickable { showPrivacyDialog = true }
                             )
-                            Text(text = strings.and, style = MaterialTheme.typography.bodySmall)
-                            Text(
-                                text = strings.privacyPolicy,
-                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = DarkGreenHeader),
-                                modifier = Modifier.clickable { showPrivacyDialog = true }
-                            )
+
                         }
                     }
 
@@ -491,7 +482,7 @@ fun RegisterScreen(
                         Text(
                             text = "Already have an account? ",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color(0xFF666666)
                         )
                         Text(
                             text = "Log in",

@@ -18,10 +18,7 @@ fun PrivacyPolicyDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                text = strings.privacyPolicy,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-            )
+
         },
         text = {
             Column(
