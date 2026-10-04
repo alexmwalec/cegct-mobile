@@ -493,27 +493,29 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // 4. GPS Pinpoint Location Card (Location Pin Icon)
+                // 4. GPS Pinpoint Location Card (Location Pin Icon - Compact Size)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(10.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .fillMaxSize()
+                            .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = LocationIcon,
                             contentDescription = "Location",
                             tint = DarkGreenHeader,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(20.dp)
                         )
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
 
                         TextField(
                             value = locationAddress,
@@ -530,10 +532,12 @@ fun ReportScreen(
                                 unfocusedTextColor = LabelTextColor
                             ),
                             textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Normal
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(46.dp)
                         )
                     }
                 }

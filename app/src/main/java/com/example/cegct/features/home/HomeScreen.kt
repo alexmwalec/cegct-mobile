@@ -220,7 +220,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         bottomBar = {
-            // Navigation Bar: Home, Report (+ sign), Nearby Reports, Profile
+            // Navigation Bar: Home, Report, Profile
             NavigationBar(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
@@ -228,30 +228,20 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = { },
-                    icon = { Icon(HomeNavIcon, contentDescription = "Home", tint = GreenPrimary) },
-                    label = { Text("Home", color = GreenPrimary, fontWeight = FontWeight.Bold) }
+                    icon = { Icon(HomeNavIcon, contentDescription = "Home", tint = DarkGreenHeader) },
+                    label = { Text("Home", color = DarkGreenHeader, fontWeight = FontWeight.Bold) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { onNavigateToReport("Illegal dumping") },
-                    icon = {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(GreenPrimary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(PlusNavIcon, contentDescription = "Report", tint = Color.White)
-                        }
-                    },
-                    label = { Text("Report", fontWeight = FontWeight.Bold, color = GreenPrimary) }
+                    icon = { Icon(PlusNavIcon, contentDescription = "Report", tint = Color.Gray) },
+                    label = { Text("Report", color = Color.Gray) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToProfile,
-                    icon = { Icon(ProfileNavIcon, contentDescription = "Profile") },
-                    label = { Text("Profile") }
+                    icon = { Icon(ProfileNavIcon, contentDescription = "Profile", tint = Color.Gray) },
+                    label = { Text("Profile", color = Color.Gray) }
                 )
             }
         }
