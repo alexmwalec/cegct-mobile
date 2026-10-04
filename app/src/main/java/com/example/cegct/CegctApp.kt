@@ -11,11 +11,14 @@ import com.example.cegct.features.auth.ui.VerifyEmailScreen
 import com.example.cegct.features.auth.ui.WelcomeScreen
 import com.example.cegct.features.casedetails.CaseDetailsScreen
 import com.example.cegct.features.chat.ChatScreen
+import com.example.cegct.features.community.CommunityScreen
 import com.example.cegct.features.home.HomeScreen
 import com.example.cegct.features.impact.ImpactScreen
 import com.example.cegct.features.map.MapScreen
 import com.example.cegct.features.myreports.MyReportsScreen
 import com.example.cegct.features.notifications.NotificationsScreen
+import com.example.cegct.features.profile.ChangePasswordScreen
+import com.example.cegct.features.profile.EditProfileScreen
 import com.example.cegct.features.profile.ProfileScreen
 import com.example.cegct.features.report.ReportScreen
 
@@ -32,6 +35,9 @@ enum class AuthScreenState {
     IMPACT,
     CASE_DETAILS,
     CHAT,
+    COMMUNITY,
+    EDIT_PROFILE,
+    CHANGE_PASSWORD,
     MAP,
     NOTIFICATIONS,
     PROFILE
@@ -171,6 +177,23 @@ fun CegctApp(
                 onBack = { navigateBack() }
             )
         }
+        AuthScreenState.COMMUNITY -> {
+            CommunityScreen(
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.EDIT_PROFILE -> {
+            EditProfileScreen(
+                onSaveSuccess = { navigateBack() },
+                onBack = { navigateBack() }
+            )
+        }
+        AuthScreenState.CHANGE_PASSWORD -> {
+            ChangePasswordScreen(
+                onPasswordUpdated = { navigateBack() },
+                onBack = { navigateBack() }
+            )
+        }
         AuthScreenState.MAP -> {
             MapScreen(
                 onConfirmLocation = { navigateBack() },
@@ -184,6 +207,8 @@ fun CegctApp(
         }
         AuthScreenState.PROFILE -> {
             ProfileScreen(
+                onNavigateToEditProfile = { navigateTo(AuthScreenState.EDIT_PROFILE) },
+                onNavigateToChangePassword = { navigateTo(AuthScreenState.CHANGE_PASSWORD) },
                 onLogout = {
                     backStack.clear()
                     backStack.add(AuthScreenState.WELCOME)

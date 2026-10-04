@@ -159,9 +159,10 @@ fun LoginScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Green curved header
+            // Green curved header with NO notification bell for Login
             GreenCurvedHeader(
                 title = strings.loginHeaderTitle,
+                showNotificationBell = false,
                 onBack = onBack
             )
 

@@ -51,6 +51,7 @@ private val BackArrowIcon: ImageVector = ImageVector.Builder(
 fun GreenCurvedHeader(
     title: String,
     subtitle: String? = null,
+    showNotificationBell: Boolean = true,
     onBack: (() -> Unit)? = null
 ) {
     Box(
@@ -100,15 +101,17 @@ fun GreenCurvedHeader(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Notification Bell icon on top-right
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🔔", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                if (showNotificationBell) {
+                    // Notification Bell icon on top-right
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🔔", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                    }
                 }
             }
 
