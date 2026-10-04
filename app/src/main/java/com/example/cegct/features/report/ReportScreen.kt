@@ -509,7 +509,7 @@ fun ReportScreen(
                         Icon(
                             imageVector = LocationIcon,
                             contentDescription = "Location",
-                            tint = Color(0xFF222222),
+                            tint = DarkGreenHeader,
                             modifier = Modifier.size(26.dp)
                         )
 
