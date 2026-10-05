@@ -80,6 +80,7 @@ fun GreenCurvedHeader(
     subtitle: String? = null,
     showNotificationBell: Boolean = false,
     showBackArrow: Boolean = false,
+    onNotificationClick: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null
 ) {
     Surface(
@@ -128,7 +129,10 @@ fun GreenCurvedHeader(
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF8BAA9B)),
+                            .background(Color(0xFF8BAA9B))
+                            .then(
+                                if (onNotificationClick != null) Modifier.clickable { onNotificationClick() } else Modifier
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

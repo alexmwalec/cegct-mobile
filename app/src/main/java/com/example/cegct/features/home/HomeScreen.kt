@@ -1,6 +1,7 @@
 package com.example.cegct.features.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -216,7 +217,8 @@ fun HomeScreen(
     onNavigateToMyReports: () -> Unit,
     onNavigateToMap: () -> Unit,
     onNavigateToImpacts: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToNotifications: () -> Unit = {}
 ) {
     Scaffold(
         bottomBar = {
@@ -284,7 +286,8 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF8BAA9B)),
+                                .background(Color(0xFF8BAA9B))
+                                .clickable { onNavigateToNotifications() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(

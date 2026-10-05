@@ -1,13 +1,14 @@
 package com.example.cegct.features.report
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,69 +20,15 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
 import kotlinx.coroutines.delay
 
 private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBackground = Color(0xFFE5F0EE)
-private val LabelTextColor = Color(0xFF1A1A1A)
-
-private val BackArrowIcon: ImageVector = ImageVector.Builder(
-    name = "BackArrow",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
-).apply {
-    path(fill = null, stroke = SolidColor(Color.White), strokeLineWidth = 2.5f) {
-        moveTo(19f, 12f)
-        lineTo(5f, 12f)
-        moveTo(11f, 18f)
-        lineTo(5f, 12f)
-        lineTo(11f, 6f)
-    }
-}.build()
-
-private val NotificationIcon: ImageVector = ImageVector.Builder(
-    name = "Notifications",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
-).apply {
-    path(fill = SolidColor(Color(0xFF1A1A1A))) {
-        moveTo(12f, 22f)
-        curveTo(13.1f, 22f, 14f, 21.1f, 14f, 20f)
-        lineTo(10f, 20f)
-        curveTo(10f, 21.1f, 10.89f, 22f, 12f, 22f)
-        close()
-        moveTo(18f, 16f)
-        lineTo(18f, 11f)
-        curveTo(18f, 7.93f, 16.36f, 5.36f, 13.5f, 4.68f)
-        lineTo(13.5f, 4f)
-        curveTo(13.5f, 3.17f, 12.83f, 2.5f, 12f, 2.5f)
-        curveTo(11.17f, 2.5f, 10.5f, 3.17f, 10.5f, 4f)
-        lineTo(10.5f, 4.68f)
-        curveTo(7.63f, 5.36f, 6f, 7.92f, 6f, 11f)
-        lineTo(6f, 16f)
-        lineTo(4f, 18f)
-        lineTo(4f, 19f)
-        lineTo(20f, 19f)
-        lineTo(20f, 18f)
-        lineTo(18f, 16f)
-        close()
-        moveTo(16f, 17f)
-        lineTo(8f, 17f)
-        lineTo(8f, 11f)
-        curveTo(8f, 8.52f, 9.51f, 6.5f, 12f, 6.5f)
-        curveTo(14.49f, 6.5f, 16f, 8.52f, 16f, 11f)
-        lineTo(16f, 17f)
-        close()
-    }
-}.build()
+private val LabelTextColor = Color(0xFF111111)
 
 private val CameraIcon: ImageVector = ImageVector.Builder(
     name = "Camera",
@@ -149,7 +96,7 @@ private val LocationIcon: ImageVector = ImageVector.Builder(
     viewportWidth = 24f,
     viewportHeight = 24f
 ).apply {
-    path(fill = SolidColor(Color(0xFF222222))) {
+    path(fill = SolidColor(DarkGreenHeader)) {
         moveTo(12f, 2f)
         curveTo(8.13f, 2f, 5f, 5.13f, 5f, 9f)
         curveTo(5f, 14.25f, 12f, 22f, 12f, 22f)
@@ -170,16 +117,15 @@ private val LocationIcon: ImageVector = ImageVector.Builder(
 fun ReportScreen(
     category: String = "Illegal dumping",
     onSubmitSuccess: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     var selectedCategory by remember { mutableStateOf(category) }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
-    var locationAddress by remember { mutableStateOf("Luwinga, Mzuzu") }
+    var locationAddress by remember { mutableStateOf("") }
     var isImageAttached by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
-
-    // Audio recording states
     var isRecording by remember { mutableStateOf(false) }
     var recordingSeconds by remember { mutableIntStateOf(0) }
     var hasVoiceNote by remember { mutableStateOf(false) }
@@ -216,88 +162,17 @@ fun ReportScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
         ) {
             // Header Section
-            Surface(
-                color = DarkGreenHeader,
-                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
-                ) {
-                    // Top Bar Row: Back, CEGCT title, Notification Bell
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = BackArrowIcon,
-                                contentDescription = "Back",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(22.dp)
-                                    .clickable { onBack() }
-                            )
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Text(
-                                text = "CEGCT",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 20.sp
-                                ),
-                                color = Color.White
-                            )
-                        }
-
-                        // Notification Bell Icon inside light circle
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF8BAA9B)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = NotificationIcon,
-                                contentDescription = "Notifications",
-                                tint = Color(0xFF1A1A1A),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Empowering you to heal the Planet",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "Report Issue",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        ),
-                        color = Color.White
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
+            GreenCurvedHeader(
+                title = "Report Issue",
+                subtitle = "Empowering you to heal the Planet",
+                showNotificationBell = true,
+                showBackArrow = true,
+                onNotificationClick = onNavigateToNotifications,
+                onBack = onBack
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -306,13 +181,14 @@ fun ReportScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // 1. Upload Image Box (Camera Icon)
+                // 1. Upload Image Card
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = if (isImageAttached) Color(0xFFE8F5E9) else Color.White
                     ),
                     shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, if (isImageAttached) DarkGreenHeader else Color(0xFFE5E5E5)),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
@@ -325,23 +201,23 @@ fun ReportScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(52.dp)
+                                .size(50.dp)
                                 .clip(CircleShape)
-                                .background(if (isImageAttached) DarkGreenHeader else Color(0xFFE5E5E5)),
+                                .background(if (isImageAttached) DarkGreenHeader else Color(0xFFE8F3EE)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = CameraIcon,
                                 contentDescription = "Camera",
-                                tint = if (isImageAttached) Color.White else Color(0xFF444444),
-                                modifier = Modifier.size(26.dp)
+                                tint = if (isImageAttached) Color.White else DarkGreenHeader,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = if (isImageAttached) "Photo Attached" else "Upload Image",
+                            text = if (isImageAttached) "Photo Attached ✓" else "Upload Image",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
@@ -354,14 +230,14 @@ fun ReportScreen(
                         Text(
                             text = "Capture evidence of the incident (JPG,PNG,MP4)",
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            color = Color(0xFF757575)
+                            color = Color(0xFF666666)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // 2. Dropdown for Choosing Issue Type (Old style)
+                // 2. Dropdown for Choosing Issue Type
                 ExposedDropdownMenuBox(
                     expanded = dropdownExpanded,
                     onExpandedChange = { dropdownExpanded = !dropdownExpanded },
@@ -373,14 +249,16 @@ fun ReportScreen(
                         readOnly = true,
                         label = { Text("Choose Issue Type") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF757575),
-                            unfocusedBorderColor = Color(0xFF757575),
-                            focusedLabelColor = Color(0xFF555555),
-                            unfocusedLabelColor = Color(0xFF555555)
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF555555),
+                            focusedTextColor = LabelTextColor,
+                            unfocusedTextColor = LabelTextColor
                         ),
                         modifier = Modifier
                             .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
@@ -412,13 +290,14 @@ fun ReportScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // 3. Description of Issue Card
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Box(
@@ -427,41 +306,53 @@ fun ReportScreen(
                             .padding(16.dp)
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Description of Issue",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                ),
-                                color = LabelTextColor
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Description of Issue",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp
+                                    ),
+                                    color = LabelTextColor
+                                )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "${description.length}/500",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                                    color = Color(0xFF888888)
+                                )
+                            }
 
-                            TextField(
-                                value = description,
-                                onValueChange = { if (it.length <= 500) description = it },
-                                placeholder = {
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                if (description.isEmpty()) {
                                     Text(
                                         text = "",
-                                        color = Color(0xFF888888)
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF888888)
+                                        )
                                     )
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    disabledContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent,
-                                    focusedTextColor = LabelTextColor,
-                                    unfocusedTextColor = LabelTextColor
-                                ),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp)
-                            )
+                                }
+
+                                BasicTextField(
+                                    value = description,
+                                    onValueChange = { if (it.length <= 500) description = it },
+                                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = Color(0xFF111111)
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 80.dp, max = 140.dp)
+                                )
+                            }
                         }
 
                         // Mic Button at Bottom Right
@@ -491,54 +382,80 @@ fun ReportScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. GPS Pinpoint Location Card (Location Pin Icon - Compact Size)
+                // 4. GPS Pinpoint Location Card (Redesigned for Premium UI)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(13.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(46.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 14.dp),
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = LocationIcon,
-                            contentDescription = "Location",
-                            tint = DarkGreenHeader,
-                            modifier = Modifier.size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        TextField(
-                            value = locationAddress,
-                            onValueChange = { locationAddress = it },
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                focusedTextColor = LabelTextColor,
-                                unfocusedTextColor = LabelTextColor
-                            ),
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal
-                            ),
+                        // Soft Light Green Circle Badge with Pin Icon
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(46.dp)
-                        )
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE8F3EE)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = LocationIcon,
+                                contentDescription = "Location Pin",
+                                tint = DarkGreenHeader,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = DarkGreenHeader
+                            )
+
+                            Spacer(modifier = Modifier.height(3.dp))
+
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                if (locationAddress.isEmpty()) {
+                                    Text(
+                                        text = " ",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontSize = 14.sp,
+                                            color = Color(0xFF888888)
+                                        )
+                                    )
+                                }
+
+                                BasicTextField(
+                                    value = locationAddress,
+                                    onValueChange = { locationAddress = it },
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF111111)
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(18.dp))
+
                     }
                 }
 
