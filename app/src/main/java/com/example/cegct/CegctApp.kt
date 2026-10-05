@@ -138,7 +138,8 @@ fun CegctApp(
                 onNavigateToMyReports = { navigateTo(AuthScreenState.MY_REPORTS) },
                 onNavigateToMap = { navigateTo(AuthScreenState.MAP) },
                 onNavigateToImpacts = { navigateTo(AuthScreenState.IMPACT) },
-                onNavigateToProfile = { navigateTo(AuthScreenState.PROFILE) }
+                onNavigateToProfile = { navigateTo(AuthScreenState.PROFILE) },
+                onNavigateToNotifications = { navigateTo(AuthScreenState.NOTIFICATIONS) }
             )
         }
         AuthScreenState.IMPACT -> {
@@ -153,6 +154,7 @@ fun CegctApp(
                     backStack.clear()
                     backStack.add(AuthScreenState.MY_REPORTS)
                 },
+                onNavigateToNotifications = { navigateTo(AuthScreenState.NOTIFICATIONS) },
                 onBack = { navigateBack() }
             )
         }
@@ -202,6 +204,10 @@ fun CegctApp(
         }
         AuthScreenState.NOTIFICATIONS -> {
             NotificationsScreen(
+                onSelectNotification = { reportId ->
+                    selectedReportId = reportId
+                    navigateTo(AuthScreenState.CASE_DETAILS)
+                },
                 onBack = { navigateBack() }
             )
         }

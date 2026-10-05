@@ -12,20 +12,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cegct.ui.theme.GreenGradientEnd
-import com.example.cegct.ui.theme.GreenGradientStart
-import com.example.cegct.ui.theme.GreenPrimary
+import androidx.compose.ui.unit.sp
+
+private val DarkGreenHeader = Color(0xFF185835)
+private val ScreenBackground = Color(0xFFE5F0EE)
 
 // Material Vector Icons for Profile Settings Cards
 private val LanguageIcon: ImageVector = ImageVector.Builder("Language", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = SolidColor(GreenPrimary)) {
+    path(fill = SolidColor(DarkGreenHeader)) {
         moveTo(11.99f, 2f)
         curveTo(6.47f, 2f, 2f, 6.48f, 2f, 12f)
         curveTo(2f, 17.52f, 6.47f, 22f, 11.99f, 22f)
@@ -41,7 +41,7 @@ private val LanguageIcon: ImageVector = ImageVector.Builder("Language", 24.dp, 2
 }.build()
 
 private val LockKeyIcon: ImageVector = ImageVector.Builder("LockKey", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = SolidColor(GreenPrimary)) {
+    path(fill = SolidColor(DarkGreenHeader)) {
         moveTo(18f, 8f)
         lineTo(17f, 8f)
         lineTo(17f, 6f)
@@ -144,10 +144,10 @@ private val EditPencilIcon: ImageVector = ImageVector.Builder("EditPencil", 24.d
 
 @Composable
 fun ProfileScreen(
-    onNavigateToEditProfile: () -> Unit,
-    onNavigateToChangePassword: () -> Unit,
-    onLogout: () -> Unit,
-    onBack: () -> Unit
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToChangePassword: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -222,25 +222,28 @@ fun ProfileScreen(
         )
     }
 
-    Scaffold { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ScreenBackground)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Screen 4 Header Banner
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(GreenGradientStart, GreenGradientEnd)
-                        )
-                    )
-                    .padding(20.dp)
+            // Dark Green Profile Header Card
+            Surface(
+                color = DarkGreenHeader,
+                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(20.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -258,7 +261,8 @@ fun ProfileScreen(
                                     text = "A",
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = GreenPrimary
+                                        color = DarkGreenHeader,
+                                        fontSize = 22.sp
                                     )
                                 )
                             }
@@ -266,7 +270,10 @@ fun ProfileScreen(
                             Column {
                                 Text(
                                     text = "Alex C Mwale",
-                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp
+                                    ),
                                     color = Color.White
                                 )
                                 Text(
@@ -277,48 +284,53 @@ fun ProfileScreen(
                             }
                         }
 
-                        // Edit Profile Circle Card Button
+                        // Edit Profile Circle Button
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.25f))
+                                .background(Color(0xFF8BAA9B))
                                 .clickable { onNavigateToEditProfile() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = EditPencilIcon,
                                 contentDescription = "Edit Profile",
-                                tint = Color.White,
-                                modifier = Modifier.size(22.dp)
+                                tint = Color(0xFF1A1A1A),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 Text(
                     text = "Application Settings",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
+                    color = Color(0xFF1A1A1A)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // 1. Language Card
                 Card(
                     onClick = { },
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = 5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -328,7 +340,7 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(LanguageIcon, contentDescription = "Language", tint = GreenPrimary, modifier = Modifier.size(24.dp))
+                            Icon(LanguageIcon, contentDescription = "Language", tint = DarkGreenHeader, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(
                                 text = "Language",
@@ -343,11 +355,11 @@ fun ProfileScreen(
                 Card(
                     onClick = onNavigateToChangePassword,
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = 5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -357,7 +369,7 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(LockKeyIcon, contentDescription = "Change Password", tint = GreenPrimary, modifier = Modifier.size(24.dp))
+                            Icon(LockKeyIcon, contentDescription = "Change Password", tint = DarkGreenHeader, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(
                                 text = "Change Password",
@@ -372,11 +384,11 @@ fun ProfileScreen(
                 Card(
                     onClick = { showDeleteDialog = true },
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = 5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -404,11 +416,11 @@ fun ProfileScreen(
                 Card(
                     onClick = { showLogoutDialog = true },
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = 5.dp)
                 ) {
                     Row(
                         modifier = Modifier

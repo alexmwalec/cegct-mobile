@@ -1,6 +1,7 @@
 package com.example.cegct.features.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -216,11 +217,12 @@ fun HomeScreen(
     onNavigateToMyReports: () -> Unit,
     onNavigateToMap: () -> Unit,
     onNavigateToImpacts: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToNotifications: () -> Unit = {}
 ) {
     Scaffold(
         bottomBar = {
-            // Navigation Bar: Home, Report (+ sign), Nearby Reports, Profile
+            // Navigation Bar: Home, Report, Profile
             NavigationBar(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
@@ -228,30 +230,20 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = { },
-                    icon = { Icon(HomeNavIcon, contentDescription = "Home", tint = GreenPrimary) },
-                    label = { Text("Home", color = GreenPrimary, fontWeight = FontWeight.Bold) }
+                    icon = { Icon(HomeNavIcon, contentDescription = "Home", tint = DarkGreenHeader) },
+                    label = { Text("Home", color = DarkGreenHeader, fontWeight = FontWeight.Bold) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { onNavigateToReport("Illegal dumping") },
-                    icon = {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(GreenPrimary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(PlusNavIcon, contentDescription = "Report", tint = Color.White)
-                        }
-                    },
-                    label = { Text("Report", fontWeight = FontWeight.Bold, color = GreenPrimary) }
+                    icon = { Icon(PlusNavIcon, contentDescription = "Report", tint = Color.Gray) },
+                    label = { Text("Report", color = Color.Gray) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToProfile,
-                    icon = { Icon(ProfileNavIcon, contentDescription = "Profile") },
-                    label = { Text("Profile") }
+                    icon = { Icon(ProfileNavIcon, contentDescription = "Profile", tint = Color.Gray) },
+                    label = { Text("Profile", color = Color.Gray) }
                 )
             }
         }
@@ -294,7 +286,8 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF8BAA9B)),
+                                .background(Color(0xFF8BAA9B))
+                                .clickable { onNavigateToNotifications() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(

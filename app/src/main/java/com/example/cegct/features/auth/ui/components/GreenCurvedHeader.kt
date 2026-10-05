@@ -1,9 +1,10 @@
 package com.example.cegct.features.auth.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,20 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cegct.ui.theme.GreenGradientEnd
-import com.example.cegct.ui.theme.GreenGradientStart
-
-// Curved header shape with smooth bottom curve
-val HeaderCurveShape = GenericShape { size, _ ->
-    moveTo(0f, 0f)
-    lineTo(size.width, 0f)
-    lineTo(size.width, size.height * 0.75f)
-    quadraticTo(
-        size.width * 0.5f, size.height * 1.15f,
-        0f, size.height * 0.75f
-    )
-    close()
-}
+import androidx.compose.ui.unit.sp
 
 private val DarkGreenHeader = Color(0xFF185835)
 
@@ -90,90 +78,92 @@ private val NotificationIcon: ImageVector = ImageVector.Builder(
 fun GreenCurvedHeader(
     title: String,
     subtitle: String? = null,
-    showNotificationBell: Boolean = true,
+    showNotificationBell: Boolean = false,
+    showBackArrow: Boolean = false,
+    onNotificationClick: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(160.dp)
-            .clip(HeaderCurveShape)
-            .background(DarkGreenHeader)
-            .padding(horizontal = 20.dp, vertical = 14.dp)
+    Surface(
+        color = DarkGreenHeader,
+        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                if (onBack != null) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier.size(36.dp)
-                    ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (showBackArrow && onBack != null) {
                         Icon(
                             imageVector = BackArrowIcon,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clickable { onBack() }
                         )
+                        Spacer(modifier = Modifier.width(12.dp))
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Text("🌍", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "CEGCT",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            fontSize = 20.sp
+                        )
+                    )
                 }
 
-                // CEGCT brand title on top-left of header
-                Text(
-                    text = "CEGCT",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
                 if (showNotificationBell) {
-                    // Notification Bell icon on top-right
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF8BAA9B)),
+                            .background(Color(0xFF8BAA9B))
+                            .then(
+                                if (onNotificationClick != null) Modifier.clickable { onNotificationClick() } else Modifier
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = NotificationIcon,
                             contentDescription = "Notifications",
                             tint = Color(0xFF1A1A1A),
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 14.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
+            if (title.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    ),
                     color = Color.White
                 )
-                if (!subtitle.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                }
+            }
+
+            if (!subtitle.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                    color = Color.White.copy(alpha = 0.9f)
+                )
             }
         }
     }
