@@ -384,7 +384,6 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. GPS Pinpoint Location Card (Redesigned for Premium UI)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
