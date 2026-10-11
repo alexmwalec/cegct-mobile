@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "899724831482",
+    "project_id": "cegct-9b839",
+    "storage_bucket": "cegct-9b839.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899724831482:android:aa36d3064e8a10dcccb743",
+        "android_client_info": {
+          "package_name": "com.package.cegct"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEO_Lp0CsABNIm0DbIZ2SjDSP6DnzKqPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
