@@ -19,6 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.core.firestore.FirestoreRepository
+import com.example.cegct.core.firestore.FirestoreRepositoryImpl
+import com.example.cegct.core.network.NetworkClient
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
 
 private val DarkGreenHeader = Color(0xFF185835)
@@ -109,7 +112,10 @@ fun MyReportsScreen(
     onSelectReport: (String) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var reportsCount by remember { mutableIntStateOf(0) }
+    val repository: FirestoreRepository = remember { FirestoreRepositoryImpl() }
+    val currentUserId = NetworkClient.currentUser?.id ?: ""
+    val userReports by repository.observeUserReports(currentUserId).collectAsState(initial = emptyList())
+    val reportsCount = userReports.size
 
     Box(
         modifier = Modifier
@@ -185,9 +191,9 @@ fun MyReportsScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Empty State Section (No Refresh List Button)
+                // Empty State Section
                 if (reportsCount == 0) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -230,63 +236,79 @@ fun MyReportsScreen(
                         )
                     }
                 } else {
-                    // Sample Submitted Report Item when count > 0
-                    Card(
-                        onClick = { onSelectReport("#CEGCT-2024-0042") },
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Water Contamination Issue",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                )
+                    // Submitted Reports List
+                    userReports.forEach { report ->
+                        val statusBgColor = when (report.status) {
+                            "RESOLVED" -> Color(0xFFE8F5E9)
+                            "IN_PROGRESS" -> Color(0xFFFFF3E0)
+                            "UNDER_REVIEW" -> Color(0xFFEDE7F6)
+                            else -> Color(0xFFE0F7FA)
+                        }
+                        val statusTextColor = when (report.status) {
+                            "RESOLVED" -> Color(0xFF2E7D32)
+                            "IN_PROGRESS" -> Color(0xFFE65100)
+                            "UNDER_REVIEW" -> Color(0xFF512DA8)
+                            else -> Color(0xFF00838F)
+                        }
 
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFE0F7FA)
+                        Card(
+                            onClick = { onSelectReport(report.reportId) },
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Submitted",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = Color(0xFF00838F),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        text = report.title.ifBlank { report.category },
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = statusBgColor
+                                    ) {
+                                        Text(
+                                            text = report.status,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = statusTextColor,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = report.reportId,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = Color.Gray
+                                )
+
+                                if (report.description.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = report.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Text(
+                                    text = "View details →",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = DarkGreenHeader),
+                                    modifier = Modifier.align(Alignment.End)
+                                )
                             }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = "#CEGCT-2024-0042",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color.Gray
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Text(
-                                text = "Unusual discoloration in the borehole water supply – yellowish tint with foul smell.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Text(
-                                text = "View details →",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = DarkGreenHeader),
-                                modifier = Modifier.align(Alignment.End)
-                            )
                         }
                     }
                 }

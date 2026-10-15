@@ -222,6 +222,11 @@ fun ProfileScreen(
         )
     }
 
+    val currentUser = com.example.cegct.core.network.NetworkClient.currentUser
+    val displayName = currentUser?.name?.ifBlank { "Citizen" } ?: "Citizen"
+    val displayEmail = currentUser?.email?.ifBlank { "user@example.com" } ?: "user@example.com"
+    val initialLetter = displayName.firstOrNull()?.uppercaseChar()?.toString() ?: "C"
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -258,7 +263,7 @@ fun ProfileScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "A",
+                                    text = initialLetter,
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = DarkGreenHeader,
@@ -269,7 +274,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(14.dp))
                             Column {
                                 Text(
-                                    text = "Alex C Mwale",
+                                    text = displayName,
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp
@@ -277,7 +282,7 @@ fun ProfileScreen(
                                     color = Color.White
                                 )
                                 Text(
-                                    text = "Joined Oct 2026",
+                                    text = displayEmail,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color.White.copy(alpha = 0.85f)
                                 )

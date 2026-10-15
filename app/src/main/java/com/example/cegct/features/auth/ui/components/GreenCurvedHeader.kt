@@ -100,16 +100,19 @@ fun GreenCurvedHeader(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (showBackArrow && onBack != null) {
-                        Icon(
-                            imageVector = BackArrowIcon,
-                            contentDescription = "Back",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .size(22.dp)
-                                .clickable { onBack() }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
+                    if (showBackArrow || onBack != null) {
+                        IconButton(
+                            onClick = { onBack?.invoke() },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = BackArrowIcon,
+                                contentDescription = "Back",
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
 
                     Text("🌍", style = MaterialTheme.typography.titleLarge)

@@ -96,7 +96,8 @@ fun CegctApp(
             RegisterScreen(
                 viewModel = viewModel,
                 onRegisterSuccess = {
-                    navigateTo(AuthScreenState.VERIFY_EMAIL)
+                    backStack.clear()
+                    backStack.add(AuthScreenState.LOGIN)
                 },
                 onNavigateToLogin = { navigateTo(AuthScreenState.LOGIN) },
                 onBack = { navigateBack() }
@@ -164,7 +165,10 @@ fun CegctApp(
                     selectedReportId = reportId
                     navigateTo(AuthScreenState.CASE_DETAILS)
                 },
-                onBack = { navigateBack() }
+                onBack = {
+                    backStack.clear()
+                    backStack.add(AuthScreenState.HOME)
+                }
             )
         }
         AuthScreenState.CASE_DETAILS -> {

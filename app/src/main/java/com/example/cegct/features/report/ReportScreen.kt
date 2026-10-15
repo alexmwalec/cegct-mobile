@@ -1,15 +1,27 @@
 package com.example.cegct.features.report
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,14 +29,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
+import com.example.cegct.features.map.InteractiveMapWidget
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBackground = Color(0xFFE5F0EE)
@@ -120,15 +139,45 @@ fun ReportScreen(
     onNavigateToNotifications: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository: com.example.cegct.core.firestore.FirestoreRepository = remember { com.example.cegct.core.firestore.FirestoreRepositoryImpl() }
     var selectedCategory by remember { mutableStateOf(category) }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
-    var locationAddress by remember { mutableStateOf("") }
-    var isImageAttached by remember { mutableStateOf(false) }
+    var locationAddress by remember { mutableStateOf("Area 25 Sector 3, Lilongwe") }
     var isSubmitting by remember { mutableStateOf(false) }
     var isRecording by remember { mutableStateOf(false) }
     var recordingSeconds by remember { mutableIntStateOf(0) }
     var hasVoiceNote by remember { mutableStateOf(false) }
+
+    // Upload Image state & Activity Result Launchers
+    val attachedImageUris = remember { mutableStateListOf<Uri>() }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+    var showMapPickerSheet by remember { mutableStateOf(false) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        if (bitmap != null) {
+            try {
+                val file = File(context.cacheDir, "report_photo_${System.currentTimeMillis()}.jpg")
+                FileOutputStream(file).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                }
+                attachedImageUris.add(Uri.fromFile(file))
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            attachedImageUris.addAll(uris)
+        }
+    }
 
     val categoriesList = listOf(
         "Illegal dumping",
@@ -152,6 +201,127 @@ fun ReportScreen(
         targetValue = if (isRecording) Color(0xFFE53935) else Color(0xFFE5E5E5),
         label = "MicBgColor"
     )
+
+    // Image Picker Option Dialog
+    if (showImagePickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showImagePickerDialog = false },
+            title = {
+                Text(
+                    text = "Upload Evidence Photo",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Text("Select an option to upload or take photo evidence for this incident:")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showImagePickerDialog = false
+                        cameraLauncher.launch(null)
+                    }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoCamera,
+                            contentDescription = "Take Photo",
+                            tint = DarkGreenHeader,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text("Take Photo", color = DarkGreenHeader, fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showImagePickerDialog = false
+                        galleryLauncher.launch("image/*")
+                    }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Choose from Gallery",
+                            tint = DarkGreenHeader,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text("Choose from Gallery", color = DarkGreenHeader)
+                    }
+                }
+            }
+        )
+    }
+
+    // Google Map Location Picker BottomSheet
+    if (showMapPickerSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showMapPickerSheet = false },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            containerColor = Color.White
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(560.dp)
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Place,
+                                contentDescription = "Location Pin",
+                                tint = DarkGreenHeader,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Choose Location on Google Map",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 17.sp
+                                ),
+                                color = DarkGreenHeader
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Drag or tap on map to pick exact location pin",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF666666))
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                InteractiveMapWidget(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    isPickerMode = true,
+                    selectedAddressText = locationAddress.ifBlank { "Area 25 Sector 3, Lilongwe" },
+                    onLocationSelected = { chosenAddress ->
+                        locationAddress = chosenAddress
+                        showMapPickerSheet = false
+                    }
+                )
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -181,57 +351,101 @@ fun ReportScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // 1. Upload Image Card
+                // 1. Upload Image Card (Camera / Gallery Picker)
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isImageAttached) Color(0xFFE8F5E9) else Color.White
+                        containerColor = if (attachedImageUris.isNotEmpty()) Color(0xFFE8F5E9) else Color.White
                     ),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = BorderStroke(1.dp, if (isImageAttached) DarkGreenHeader else Color(0xFFE5E5E5)),
+                    border = BorderStroke(
+                        1.dp,
+                        if (attachedImageUris.isNotEmpty()) DarkGreenHeader else Color(0xFFE5E5E5)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
-                        .clickable { isImageAttached = !isImageAttached }
+                        .clickable { showImagePickerDialog = true }
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                                .background(if (isImageAttached) DarkGreenHeader else Color(0xFFE8F3EE)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = CameraIcon,
-                                contentDescription = "Camera",
-                                tint = if (isImageAttached) Color.White else DarkGreenHeader,
-                                modifier = Modifier.size(24.dp)
+                        if (attachedImageUris.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE8F3EE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = CameraIcon,
+                                    contentDescription = "Camera",
+                                    tint = DarkGreenHeader,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Upload Image / Take Photo",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                ),
+                                color = LabelTextColor
                             )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "Tap to open camera or choose evidence photos from gallery",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                color = Color(0xFF666666)
+                            )
+                        } else {
+                            // Thumbnails of Attached Images
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Attached Photos (${attachedImageUris.size}) ✓",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = DarkGreenHeader
+                                    )
+                                )
+
+                                TextButton(onClick = { showImagePickerDialog = true }) {
+                                    Text(
+                                        text = "+ Add More",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = DarkGreenHeader
+                                        )
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(attachedImageUris) { uri ->
+                                    UriThumbnailItem(
+                                        uri = uri,
+                                        onRemove = { attachedImageUris.remove(uri) }
+                                    )
+                                }
+                            }
                         }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            text = if (isImageAttached) "Photo Attached ✓" else "Upload Image",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            ),
-                            color = LabelTextColor
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = "Capture evidence of the incident (JPG,PNG,MP4)",
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            color = Color(0xFF666666)
-                        )
                     }
                 }
 
@@ -332,7 +546,7 @@ fun ReportScreen(
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 if (description.isEmpty()) {
                                     Text(
-                                        text = "",
+                                        text = "Type report details...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             fontSize = 14.sp,
                                             color = Color(0xFF888888)
@@ -384,7 +598,7 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. GPS Pinpoint Location Card (Redesigned for Premium UI)
+                // 4. GPS Pinpoint Location Card with Integrated Google Map Picker
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
@@ -392,53 +606,62 @@ fun ReportScreen(
                     border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(16.dp)
                     ) {
-                        // Soft Light Green Circle Badge with Pin Icon
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE8F3EE)),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = LocationIcon,
-                                contentDescription = "Location Pin",
-                                tint = DarkGreenHeader,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE8F3EE))
+                                    .clickable { showMapPickerSheet = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = LocationIcon,
+                                    contentDescription = "Choose Location on Map",
+                                    tint = DarkGreenHeader,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.5.sp
-                                ),
-                                color = DarkGreenHeader
-                            )
-
-                            Spacer(modifier = Modifier.height(3.dp))
-
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                if (locationAddress.isEmpty()) {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "LOCATION ADDRESS",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.5.sp
+                                        ),
+                                        color = DarkGreenHeader
+                                    )
                                     Text(
                                         text = " ",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF888888)
-                                        )
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = DarkGreenHeader.copy(alpha = 0.7f)
+                                        ),
+                                        modifier = Modifier.clickable { showMapPickerSheet = true }
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.height(3.dp))
 
                                 BasicTextField(
                                     value = locationAddress,
@@ -453,9 +676,6 @@ fun ReportScreen(
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.width(18.dp))
-
                     }
                 }
 
@@ -465,7 +685,23 @@ fun ReportScreen(
                 Button(
                     onClick = {
                         isSubmitting = true
-                        onSubmitSuccess()
+                        coroutineScope.launch {
+                            val photoBase64 = attachedImageUris.firstOrNull()?.let { uri ->
+                                uriToBase64(context, uri)
+                            }
+                            val newReport = com.example.cegct.core.firestore.models.ReportEntity(
+                                category = selectedCategory,
+                                title = selectedCategory,
+                                description = description,
+                                address = locationAddress.ifBlank { "Area 25 Sector 3, Lilongwe" },
+                                latitude = -13.9350,
+                                longitude = 33.7850,
+                                imageUrls = if (photoBase64 != null) listOf(photoBase64) else emptyList()
+                            )
+                            repository.createReport(newReport)
+                            isSubmitting = false
+                            onSubmitSuccess()
+                        }
                     },
                     enabled = !isSubmitting,
                     modifier = Modifier
@@ -499,6 +735,85 @@ fun ReportScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+}
+
+@Composable
+fun UriThumbnailItem(
+    uri: Uri,
+    onRemove: () -> Unit
+) {
+    val context = LocalContext.current
+    val bitmap = remember(uri) {
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)
+            }?.asImageBitmap()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(90.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFEEEEEE))
+    ) {
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = "Uploaded evidence image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = CameraIcon, contentDescription = null, tint = Color.Gray)
+            }
+        }
+
+        // Delete button (X)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp)
+                .size(22.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.6f))
+                .clickable { onRemove() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "✕", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+private fun uriToBase64(context: android.content.Context, uri: Uri): String? {
+    return try {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val original = BitmapFactory.decodeStream(inputStream) ?: return null
+            val maxDim = 500
+            val width = original.width
+            val height = original.height
+            val scaled = if (width > maxDim || height > maxDim) {
+                val ratio = width.toFloat() / height.toFloat()
+                if (ratio > 1) {
+                    Bitmap.createScaledBitmap(original, maxDim, (maxDim / ratio).toInt(), true)
+                } else {
+                    Bitmap.createScaledBitmap(original, (maxDim * ratio).toInt(), maxDim, true)
+                }
+            } else original
+            val outputStream = java.io.ByteArrayOutputStream()
+            scaled.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
+            val bytes = outputStream.toByteArray()
+            "data:image/jpeg;base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        }
+    } catch (_: Exception) {
+        null
     }
 }
 

@@ -38,9 +38,8 @@ class AuthViewModel(
             _isLoading.value = false
             result.onSuccess {
                 onSuccess()
-            }.onFailure {
-                // UX detail: Never reveal whether an email is registered ("Email or password is incorrect")
-                _authError.value = getAuthStrings(_selectedLanguage.value).genericAuthError
+            }.onFailure { error ->
+                _authError.value = error.message ?: "Invalid email or password."
             }
         }
     }
@@ -53,8 +52,8 @@ class AuthViewModel(
             _isLoading.value = false
             result.onSuccess {
                 onSuccess()
-            }.onFailure {
-                _authError.value = getAuthStrings(_selectedLanguage.value).genericAuthError
+            }.onFailure { error ->
+                _authError.value = error.message ?: "Google Sign-In is disabled."
             }
         }
     }
@@ -73,8 +72,8 @@ class AuthViewModel(
             _isLoading.value = false
             result.onSuccess {
                 onSuccess()
-            }.onFailure {
-                _authError.value = it.localizedMessage ?: "Registration failed"
+            }.onFailure { error ->
+                _authError.value = error.message ?: "Registration failed."
             }
         }
     }
@@ -87,8 +86,8 @@ class AuthViewModel(
             _isLoading.value = false
             result.onSuccess {
                 onSuccess()
-            }.onFailure {
-                _authError.value = it.localizedMessage ?: "Verification failed"
+            }.onFailure { error ->
+                _authError.value = error.message ?: "Verification failed."
             }
         }
     }
@@ -108,7 +107,6 @@ class AuthViewModel(
             _authError.value = null
             val result = authRepository.forgotPassword(email)
             _isLoading.value = false
-            // Always succeed with generic response so registered email status is never leaked
             onSuccess()
         }
     }
@@ -119,7 +117,7 @@ class AuthViewModel(
             _authError.value = null
             val result = authRepository.resetPassword(token, pass)
             _isLoading.value = false
-            result.onSuccess { onSuccess() }.onFailure { _authError.value = it.localizedMessage }
+            result.onSuccess { onSuccess() }.onFailure { error -> _authError.value = error.message }
         }
     }
 
@@ -129,7 +127,9 @@ class AuthViewModel(
             _authError.value = null
             val result = authRepository.continueAnonymously()
             _isLoading.value = false
-            result.onSuccess { onSuccess() }
+            result.onSuccess { onSuccess() }.onFailure { error ->
+                _authError.value = error.message ?: "Guest mode disabled."
+            }
         }
     }
 }
