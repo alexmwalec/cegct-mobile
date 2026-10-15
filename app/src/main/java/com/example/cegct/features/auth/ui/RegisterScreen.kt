@@ -119,6 +119,10 @@ fun RegisterScreen(
             phone.isNotBlank() && isPhoneValid &&
             password.length >= 8 && password == confirmPassword && termsAccepted
 
+    LaunchedEffect(Unit) {
+        viewModel.clearError()
+    }
+
     if (showPrivacyDialog) {
         PrivacyPolicyDialog(
             strings = strings,
@@ -135,6 +139,7 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
         ) {
             GreenCurvedHeader(
                 title = strings.registerHeaderTitle,
