@@ -18,8 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cegct.ui.theme.GreenGradientEnd
-import com.example.cegct.ui.theme.GreenGradientStart
+import com.example.cegct.features.map.InteractiveMapWidget
 import com.example.cegct.ui.theme.GreenPrimary
 
 // Material Vector Icons for Cards
@@ -230,7 +229,13 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = { },
-                    icon = { Icon(HomeNavIcon, contentDescription = "Home", tint = DarkGreenHeader) },
+                    icon = {
+                        Icon(
+                            HomeNavIcon,
+                            contentDescription = "Home",
+                            tint = DarkGreenHeader
+                        )
+                    },
                     label = { Text("Home", color = DarkGreenHeader, fontWeight = FontWeight.Bold) }
                 )
                 NavigationBarItem(
@@ -242,7 +247,13 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToProfile,
-                    icon = { Icon(ProfileNavIcon, contentDescription = "Profile", tint = Color.Gray) },
+                    icon = {
+                        Icon(
+                            ProfileNavIcon,
+                            contentDescription = "Profile",
+                            tint = Color.Gray
+                        )
+                    },
                     label = { Text("Profile", color = Color.Gray) }
                 )
             }
@@ -309,8 +320,16 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+                    val timeGreeting = when {
+                        currentHour in 0..11 -> "Good morning"
+                        currentHour in 12..17 -> "Good afternoon"
+                        else -> "Good evening"
+                    }
+                    val loggedInName = com.example.cegct.core.network.NetworkClient.currentUser?.name?.ifBlank { "User" } ?: "User"
+
                     Text(
-                        text = "Good night, Alex Mwale 👋",
+                        text = "$timeGreeting, $loggedInName",
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )
@@ -332,18 +351,17 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding   (horizontal = 20.dp)
+                    .padding(horizontal = 20.dp)
             ) {
                 Text(
                     text = "Quick Action",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.Black,
-
+                        color = Color.Black
                     )
                 )
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // 2x2 Grid Cards with Material Vector Icons
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -538,8 +556,10 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(28.dp))
+
             }
         }
     }
 }
+

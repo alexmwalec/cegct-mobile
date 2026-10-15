@@ -154,6 +154,10 @@ fun LoginScreen(
     val emailErrorText = if (emailTouched && email.isNotEmpty() && !isEmailValid) strings.errValidEmail else null
     val passwordErrorText = if (passwordTouched && password.isNotEmpty() && !isPasswordValid) strings.errPasswordLength else null
 
+    LaunchedEffect(Unit) {
+        viewModel.clearError()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -163,6 +167,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
         ) {
             // Header with CEGCT Logo & Name
             GreenCurvedHeader(

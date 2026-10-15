@@ -50,12 +50,13 @@ fun EditProfileScreen(
     onSaveSuccess: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var fullName by remember { mutableStateOf("Alex C Mwale") }
-    var email by remember { mutableStateOf("example@gmail.com") }
-    var phone by remember { mutableStateOf("") }
+    val currentUser = com.example.cegct.core.network.NetworkClient.currentUser
+    var fullName by remember { mutableStateOf(currentUser?.name ?: "Citizen") }
+    var email by remember { mutableStateOf(currentUser?.email ?: "example@gmail.com") }
+    var phone by remember { mutableStateOf(currentUser?.phone ?: "") }
     var isSaving by remember { mutableStateOf(false) }
 
-    val initialLetter = fullName.firstOrNull()?.uppercase() ?: "A"
+    val initialLetter = fullName.firstOrNull()?.uppercase() ?: "C"
 
     Box(
         modifier = Modifier
