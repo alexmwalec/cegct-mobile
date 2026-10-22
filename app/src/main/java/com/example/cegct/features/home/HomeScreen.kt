@@ -18,6 +18,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.cegct.core.firestore.FirestoreRepository
+import com.example.cegct.core.firestore.FirestoreRepositoryImpl
+import com.example.cegct.core.firestore.models.ReportEntity
 import com.example.cegct.features.map.InteractiveMapWidget
 import com.example.cegct.ui.theme.GreenPrimary
 
@@ -556,7 +560,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
             }
         }

@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -147,6 +146,7 @@ fun ReportScreen(
     var description by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("Area 25 Sector 3, Lilongwe") }
     var isSubmitting by remember { mutableStateOf(false) }
+    var submissionError by remember { mutableStateOf<String?>(null) }
     var isRecording by remember { mutableStateOf(false) }
     var recordingSeconds by remember { mutableIntStateOf(0) }
     var hasVoiceNote by remember { mutableStateOf(false) }
@@ -196,11 +196,6 @@ fun ReportScreen(
             }
         }
     }
-
-    val micButtonBgColor by animateColorAsState(
-        targetValue = if (isRecording) Color(0xFFE53935) else Color(0xFFE5E5E5),
-        label = "MicBgColor"
-    )
 
     // Image Picker Option Dialog
     if (showImagePickerDialog) {
@@ -353,17 +348,13 @@ fun ReportScreen(
             ) {
                 // 1. Upload Image Card (Camera / Gallery Picker)
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (attachedImageUris.isNotEmpty()) Color(0xFFE8F5E9) else Color.White
-                    ),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = BorderStroke(
-                        1.dp,
-                        if (attachedImageUris.isNotEmpty()) DarkGreenHeader else Color(0xFFE5E5E5)
-                    ),
+                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 160.dp)
                         .clickable { showImagePickerDialog = true }
                 ) {
                     Column(
@@ -512,27 +503,66 @@ fun ReportScreen(
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 160.dp)
                 ) {
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Description of Issue",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                ),
+                                color = LabelTextColor
+                            )
+
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "Description of Issue",
-                                    style = MaterialTheme.typography.titleSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    ),
-                                    color = LabelTextColor
-                                )
+                                // Mic Record Button cleanly positioned in header row
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = if (isRecording) Color(0xFFD32F2F) else if (hasVoiceNote) Color(0xFFE8F5E9) else Color(0xFFF0F0F0),
+                                    modifier = Modifier.clickable {
+                                        if (isRecording) {
+                                            isRecording = false
+                                            hasVoiceNote = true
+                                        } else {
+                                            isRecording = true
+                                        }
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = MicIcon,
+                                            contentDescription = "Record Voice Note",
+                                            tint = if (isRecording) Color.White else if (hasVoiceNote) DarkGreenHeader else Color(0xFF444444),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isRecording) "Rec 00:${if (recordingSeconds < 10) "0" else ""}$recordingSeconds"
+                                                   else if (hasVoiceNote) "Voice Note ✓"
+                                                   else "Record",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = if (isRecording) Color.White else if (hasVoiceNote) DarkGreenHeader else Color(0xFF444444)
+                                        )
+                                    }
+                                }
 
                                 Text(
                                     text = "${description.length}/500",
@@ -540,57 +570,36 @@ fun ReportScreen(
                                     color = Color(0xFF888888)
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                if (description.isEmpty()) {
-                                    Text(
-                                        text = "Type report details...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF888888)
-                                        )
-                                    )
-                                }
-
-                                BasicTextField(
-                                    value = description,
-                                    onValueChange = { if (it.length <= 500) description = it },
-                                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        color = Color(0xFF111111)
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 80.dp, max = 140.dp)
-                                )
-                            }
                         }
 
-                        // Mic Button at Bottom Right
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Box(
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(micButtonBgColor)
-                                .clickable {
-                                    if (isRecording) {
-                                        isRecording = false
-                                        hasVoiceNote = true
-                                    } else {
-                                        isRecording = true
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .heightIn(min = 100.dp)
                         ) {
-                            Icon(
-                                imageVector = MicIcon,
-                                contentDescription = "Record Voice Note",
-                                tint = if (isRecording) Color.White else Color(0xFF444444),
-                                modifier = Modifier.size(22.dp)
+                            if (description.isEmpty()) {
+                                Text(
+                                    text = "Type report details or tap 'Record' above to speak...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF888888)
+                                    )
+                                )
+                            }
+
+                            BasicTextField(
+                                value = description,
+                                onValueChange = { if (it.length <= 500) description = it },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color(0xFF111111)
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 100.dp, max = 200.dp)
                             )
                         }
                     }
@@ -681,26 +690,63 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
+                if (submissionError != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Color(0xFFEF5350)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = submissionError!!,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color(0xFFC62828),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { submissionError = null },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Text("✕", color = Color(0xFFC62828), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
                 // 5. Submit Report Button
                 Button(
                     onClick = {
                         isSubmitting = true
+                        submissionError = null
                         coroutineScope.launch {
-                            val photoBase64 = attachedImageUris.firstOrNull()?.let { uri ->
-                                uriToBase64(context, uri)
-                            }
+                            val selectedUri = attachedImageUris.firstOrNull()
                             val newReport = com.example.cegct.core.firestore.models.ReportEntity(
                                 category = selectedCategory,
                                 title = selectedCategory,
                                 description = description,
                                 address = locationAddress.ifBlank { "Area 25 Sector 3, Lilongwe" },
                                 latitude = -13.9350,
-                                longitude = 33.7850,
-                                imageUrls = if (photoBase64 != null) listOf(photoBase64) else emptyList()
+                                longitude = 33.7850
                             )
-                            repository.createReport(newReport)
+                            val result = repository.createReport(
+                                report = newReport,
+                                imageUri = selectedUri,
+                                context = context
+                            )
                             isSubmitting = false
-                            onSubmitSuccess()
+                            if (result.isSuccess) {
+                                onSubmitSuccess()
+                            } else {
+                                submissionError = result.exceptionOrNull()?.message ?: "Report submission failed."
+                            }
                         }
                     },
                     enabled = !isSubmitting,
@@ -789,31 +835,6 @@ fun UriThumbnailItem(
         ) {
             Text(text = "✕", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-private fun uriToBase64(context: android.content.Context, uri: Uri): String? {
-    return try {
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            val original = BitmapFactory.decodeStream(inputStream) ?: return null
-            val maxDim = 500
-            val width = original.width
-            val height = original.height
-            val scaled = if (width > maxDim || height > maxDim) {
-                val ratio = width.toFloat() / height.toFloat()
-                if (ratio > 1) {
-                    Bitmap.createScaledBitmap(original, maxDim, (maxDim / ratio).toInt(), true)
-                } else {
-                    Bitmap.createScaledBitmap(original, (maxDim * ratio).toInt(), maxDim, true)
-                }
-            } else original
-            val outputStream = java.io.ByteArrayOutputStream()
-            scaled.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
-            val bytes = outputStream.toByteArray()
-            "data:image/jpeg;base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        }
-    } catch (_: Exception) {
-        null
     }
 }
 

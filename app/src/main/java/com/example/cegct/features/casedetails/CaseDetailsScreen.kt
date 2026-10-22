@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,47 +16,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.cegct.core.firestore.FirestoreRepository
+import com.example.cegct.core.firestore.FirestoreRepositoryImpl
+import com.example.cegct.core.firestore.models.ReportEntity
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBg = Color(0xFFE5F0EE)
-
-private val ChatIcon: ImageVector = ImageVector.Builder(
-    name = "Chat",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
-).apply {
-    path(fill = SolidColor(Color.White)) {
-        moveTo(20f, 2f)
-        lineTo(4f, 2f)
-        curveTo(2.9f, 2f, 2f, 2.9f, 2f, 4f)
-        lineTo(2f, 22f)
-        lineTo(6f, 18f)
-        lineTo(20f, 18f)
-        curveTo(21.1f, 18f, 22f, 17.1f, 22f, 16f)
-        lineTo(22f, 4f)
-        curveTo(22f, 2.9f, 21.1f, 2f, 20f, 2f)
-        close()
-        moveTo(6f, 9f)
-        lineTo(18f, 9f)
-        lineTo(18f, 11f)
-        lineTo(6f, 11f)
-        close()
-        moveTo(6f, 13f)
-        lineTo(14f, 13f)
-        lineTo(14f, 15f)
-        lineTo(6f, 15f)
-        close()
-    }
-}.build()
 
 enum class CaseDetailTab {
     OVERVIEW,
@@ -70,44 +45,75 @@ data class TimelineStep(
     val isCurrent: Boolean
 )
 
+private fun formatTimestamp(timestamp: Long?): String {
+    if (timestamp == null || timestamp == 0L) return "Recently reported"
+    return try {
+        val sdf = SimpleDateFormat("dd MMM yyyy • hh:mm a", Locale.getDefault())
+        sdf.format(Date(timestamp))
+    } catch (_: Exception) {
+        "Recently reported"
+    }
+}
+
 @Composable
 fun CaseDetailsScreen(
     reportId: String = "#CEGCT-2024-0042",
-    onNavigateToChat: () -> Unit,
-    onBack: () -> Unit
+    onNavigateToChat: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(CaseDetailTab.OVERVIEW) }
+    val repository: FirestoreRepository = remember { FirestoreRepositoryImpl() }
+    var reportEntity by remember { mutableStateOf<ReportEntity?>(null) }
 
-    val timelineSteps = listOf(
-        TimelineStep(
-            title = "Report Submitted",
-            time = "14 Nov 2024 • 10:32 AM",
-            description = "Incident captured and logged as case $reportId.",
-            isCompleted = true,
-            isCurrent = false
-        ),
-        TimelineStep(
-            title = "Under Investigation",
-            time = "15 Nov 2024 • 09:14 AM",
-            description = "Escalated to CEGCT Regional Officer Joseph Banda.",
-            isCompleted = true,
-            isCurrent = true
-        ),
-        TimelineStep(
-            title = "Field Inspection Scheduled",
-            time = "Pending Scheduled Inspection",
-            description = "Inspector team dispatched to collect water & soil samples.",
-            isCompleted = false,
-            isCurrent = false
-        ),
-        TimelineStep(
-            title = "Resolution & Enforcement",
-            time = "Pending Final Review",
-            description = "Enforcement order and compliance action.",
-            isCompleted = false,
-            isCurrent = false
+    LaunchedEffect(reportId) {
+        val res = repository.getReportDetails(reportId)
+        if (res.isSuccess) {
+            reportEntity = res.getOrNull()
+        }
+    }
+
+    val report = reportEntity
+    val currentStatus = report?.status?.uppercase() ?: "SUBMITTED"
+    val reportedTimeStr = formatTimestamp(report?.createdAt)
+    val updatedTimeStr = formatTimestamp(report?.updatedAt ?: report?.createdAt)
+
+    val timelineSteps = remember(report, currentStatus, reportedTimeStr, updatedTimeStr) {
+        listOf(
+            TimelineStep(
+                title = "Report Submitted",
+                time = reportedTimeStr,
+                description = "Incident captured and logged under case $reportId.",
+                isCompleted = true,
+                isCurrent = currentStatus == "SUBMITTED"
+            ),
+            TimelineStep(
+                title = "Under Investigation",
+                time = if (currentStatus != "SUBMITTED") updatedTimeStr else "Pending Investigation",
+                description = if (report?.assignedInspectorName.isNullOrBlank()) {
+                    "Assigned to CEGCT Environmental Assessment Team for evaluation."
+                } else {
+                    "Assigned to Inspector ${report.assignedInspectorName} for regional review."
+                },
+                isCompleted = currentStatus in listOf("UNDER_REVIEW", "INSPECTION_SCHEDULED", "IN_PROGRESS", "RESOLVED"),
+                isCurrent = currentStatus == "UNDER_REVIEW"
+            ),
+            TimelineStep(
+                title = "Field Inspection Scheduled",
+                time = if (currentStatus in listOf("INSPECTION_SCHEDULED", "IN_PROGRESS", "RESOLVED")) "Inspection Dispatched" else "Pending Scheduled Inspection",
+                description = "Field inspection team dispatched to collect environmental evidence at ${report?.address?.ifBlank { "reported location" } ?: "reported location"}.",
+                isCompleted = currentStatus in listOf("IN_PROGRESS", "RESOLVED"),
+                isCurrent = currentStatus in listOf("INSPECTION_SCHEDULED", "IN_PROGRESS")
+            ),
+            TimelineStep(
+                title = "Resolution & Enforcement",
+                time = if (currentStatus == "RESOLVED") formatTimestamp(report?.resolvedAt ?: report?.updatedAt) else "Pending Final Review",
+                description = report?.resolutionDetails?.ifBlank { null }
+                    ?: if (currentStatus == "RESOLVED") "Environmental issue resolved and compliance verified." else "Enforcement order and compliance review.",
+                isCompleted = currentStatus == "RESOLVED",
+                isCurrent = currentStatus == "RESOLVED"
+            )
         )
-    )
+    }
 
     Box(
         modifier = Modifier
@@ -167,12 +173,19 @@ fun CaseDetailsScreen(
                                     )
                                 }
 
+                                val statusBg = when (currentStatus) {
+                                    "RESOLVED" -> Color(0xFF2E7D32)
+                                    "IN_PROGRESS", "INSPECTION_SCHEDULED" -> Color(0xFFFF9800)
+                                    "UNDER_REVIEW" -> Color(0xFF0288D1)
+                                    else -> Color(0xFF00838F)
+                                }
+
                                 Surface(
                                     shape = RoundedCornerShape(20.dp),
-                                    color = Color(0xFFFF9800)
+                                    color = statusBg
                                 ) {
                                     Text(
-                                        text = "In Progress",
+                                        text = currentStatus.replace("_", " "),
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White
@@ -185,7 +198,7 @@ fun CaseDetailsScreen(
                             Spacer(modifier = Modifier.height(14.dp))
 
                             Text(
-                                text = "Industrial Waste Discharge in Stream",
+                                text = report?.title?.ifBlank { report.category } ?: "Environmental Incident Report",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 20.sp,
@@ -195,12 +208,21 @@ fun CaseDetailsScreen(
 
                             Spacer(modifier = Modifier.height(6.dp))
 
-                            Text(
-                                text = "Area 25 Sector 3, Lilongwe • Filed 14 Nov 2024",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = Color.White.copy(alpha = 0.85f)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = "Location",
+                                    tint = Color.White.copy(alpha = 0.9f),
+                                    modifier = Modifier.size(16.dp)
                                 )
-                            )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${report?.address?.ifBlank { "Malawi" } ?: "Malawi"} • $reportedTimeStr",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = Color.White.copy(alpha = 0.85f)
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -265,19 +287,36 @@ fun CaseDetailsScreen(
                                     Column(modifier = Modifier.padding(12.dp)) {
                                         Text("CATEGORY", style = MaterialTheme.typography.labelSmall, color = Color(0xFF00796B))
                                         Spacer(modifier = Modifier.height(2.dp))
-                                        Text("Water Pollution", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF004D40)))
+                                        Text(
+                                            text = report?.category?.ifBlank { "Environmental" } ?: "Environmental",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF004D40))
+                                        )
                                     }
                                 }
 
+                                val urgencyColor = when (report?.urgency?.uppercase()) {
+                                    "CRITICAL", "HIGH" -> Color(0xFFD32F2F)
+                                    "LOW" -> Color(0xFF2E7D32)
+                                    else -> Color(0xFFE65100)
+                                }
+                                val urgencyBg = when (report?.urgency?.uppercase()) {
+                                    "CRITICAL", "HIGH" -> Color(0xFFFFEBEE)
+                                    "LOW" -> Color(0xFFE8F5E9)
+                                    else -> Color(0xFFFFF3E0)
+                                }
+
                                 Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                                    colors = CardDefaults.cardColors(containerColor = urgencyBg),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Column(modifier = Modifier.padding(12.dp)) {
-                                        Text("URGENCY", style = MaterialTheme.typography.labelSmall, color = Color(0xFFD32F2F))
+                                        Text("URGENCY", style = MaterialTheme.typography.labelSmall, color = urgencyColor)
                                         Spacer(modifier = Modifier.height(2.dp))
-                                        Text("High Urgency", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFB71C1C)))
+                                        Text(
+                                            text = "${report?.urgency?.ifBlank { "MEDIUM" } ?: "MEDIUM"} Urgency",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = urgencyColor)
+                                        )
                                     }
                                 }
                             }
@@ -299,14 +338,43 @@ fun CaseDetailsScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
 
                                     Text(
-                                        text = "Dark oily chemical discharge observed spilling into the stream near the industrial outlet. Strong pungent smell and visible discoloration present along a 200m stretch.",
+                                        text = report?.description?.ifBlank { "No detailed description provided." } ?: "No detailed description provided.",
                                         style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
                                         color = Color(0xFF444444)
                                     )
                                 }
                             }
 
-                            // Assigned Officer Card
+                            // Citizen Evidence Photo Card (if available)
+                            val firstImageUrl = report?.imageUrls?.firstOrNull()
+                            if (!firstImageUrl.isNullOrBlank()) {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            text = "Citizen Evidence Photo",
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = Color(0xFF111111)
+                                        )
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        AsyncImage(
+                                            model = firstImageUrl,
+                                            contentDescription = "Evidence Photo",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(220.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Reporter Info Card
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -328,7 +396,7 @@ fun CaseDetailsScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Person,
-                                            contentDescription = "Officer",
+                                            contentDescription = "Reporter",
                                             tint = DarkGreenHeader,
                                             modifier = Modifier.size(26.dp)
                                         )
@@ -338,27 +406,16 @@ fun CaseDetailsScreen(
 
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Inspector Joseph Banda",
+                                            text = "Reported by ${report?.userName?.ifBlank { "Citizen" } ?: "Citizen"}",
                                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                             color = Color(0xFF111111)
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "CEGCT Lilongwe Regional Office",
+                                            text = "Reported on $reportedTimeStr",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = Color(0xFF666666)
                                         )
-                                    }
-
-                                    Button(
-                                        onClick = onNavigateToChat,
-                                        colors = ButtonDefaults.buttonColors(containerColor = DarkGreenHeader),
-                                        shape = RoundedCornerShape(10.dp),
-                                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
-                                    ) {
-                                        Icon(imageVector = ChatIcon, contentDescription = "Chat", modifier = Modifier.size(16.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Chat", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                                     }
                                 }
                             }
@@ -459,25 +516,6 @@ fun CaseDetailsScreen(
                             }
                         }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Primary Bottom Action: Chat with Assigned Officer
-                Button(
-                    onClick = onNavigateToChat,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkGreenHeader),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Icon(imageVector = ChatIcon, contentDescription = "Chat", modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Chat with Officer Joseph Banda",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))

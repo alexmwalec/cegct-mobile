@@ -1,10 +1,13 @@
 package com.example.cegct.core.network
 
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface CegctApiService {
@@ -27,10 +30,11 @@ interface CegctApiService {
         @Header("Authorization") token: String
     ): Response<NetworkWrapper<UserDto>>
 
+    @Multipart
     @POST("reports")
     suspend fun createReport(
         @Header("Authorization") token: String,
-        @Body request: CreateReportRequest
+        @Part parts: List<MultipartBody.Part>
     ): Response<NetworkWrapper<ReportResponseDto>>
 
     @GET("reports")

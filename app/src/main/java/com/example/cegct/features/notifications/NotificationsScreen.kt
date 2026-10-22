@@ -16,10 +16,14 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.core.firestore.FirestoreRepository
+import com.example.cegct.core.firestore.FirestoreRepositoryImpl
+import com.example.cegct.core.firestore.models.ReportEntity
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
 
 private val DarkGreenHeader = Color(0xFF185835)
@@ -80,44 +84,38 @@ fun NotificationsScreen(
     onSelectNotification: (String) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var showEmptyState by remember { mutableStateOf(false) }
+    val repository: FirestoreRepository = remember { FirestoreRepositoryImpl() }
+    val realReports by repository.observeAllReports().collectAsState(initial = emptyList())
+    var filterUnreadOnly by remember { mutableStateOf(false) }
 
-    val notificationsList = remember {
-        listOf(
+    // Convert real-time report objects into live Notification items
+    val liveNotifications = remember(realReports) {
+        realReports.map { report ->
+            val statusClean = report.status.uppercase()
+            val (statusColor, statusBg) = when {
+                statusClean.contains("RESOLVE") -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
+                statusClean.contains("PROGRESS") -> Color(0xFFEF6C00) to Color(0xFFFFF3E0)
+                else -> Color(0xFF00838F) to Color(0xFFE0F7FA)
+            }
+
             NotificationItemData(
-                id = "1",
-                title = "Report Status Updated",
-                caseId = "#CEGCT-2024-0042",
-                message = "NEMA regional office assigned an assessment officer to inspect the reported water contamination.",
-                timeTime = "10 mins ago",
-                statusTag = "In Progress",
-                statusColor = Color(0xFFEF6C00),
-                statusBg = Color(0xFFFFF3E0),
-                isRead = false
-            ),
-            NotificationItemData(
-                id = "2",
-                title = "New Case Response",
-                caseId = "#CEGCT-2024-0039",
-                message = "The illegal waste dumping site near Block C has been cleared by the local environmental response team.",
-                timeTime = "2 hours ago",
-                statusTag = "Resolved",
-                statusColor = Color(0xFF2E7D32),
-                statusBg = Color(0xFFE8F5E9),
-                isRead = true
-            ),
-            NotificationItemData(
-                id = "3",
-                title = "Report Under Review",
-                caseId = "#CEGCT-2024-0028",
-                message = "Your environmental report on air pollution emissions has been verified and forwarded to authorities.",
-                timeTime = "1 day ago",
-                statusTag = "Under Review",
-                statusColor = Color(0xFF00838F),
-                statusBg = Color(0xFFE0F7FA),
-                isRead = true
+                id = report.reportId,
+                title = report.title.ifBlank { "Report: ${report.category}" },
+                caseId = report.reportId,
+                message = "Status is '${report.status}' for incident at ${report.address.ifBlank { "reported location" }}.",
+                timeTime = if (report.createdAt != null && report.createdAt > 0) "Reported #${report.reportId.take(8)}" else "Recently",
+                statusTag = report.status.ifBlank { "PENDING" },
+                statusColor = statusColor,
+                statusBg = statusBg,
+                isRead = statusClean.contains("RESOLVE")
             )
-        )
+        }
+    }
+
+    val filteredList = if (filterUnreadOnly) {
+        liveNotifications.filter { !it.isRead }
+    } else {
+        liveNotifications
     }
 
     Box(
@@ -133,7 +131,7 @@ fun NotificationsScreen(
             // Dark Green Header Banner
             GreenCurvedHeader(
                 title = "Notifications Inbox",
-                subtitle = "Stay updated on your reported environmental issues",
+                subtitle = "Real-time status updates on environmental reports",
                 showNotificationBell = false,
                 showBackArrow = true,
                 onBack = onBack
@@ -146,14 +144,14 @@ fun NotificationsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // Header Action Bar: Count & Toggle View
+                // Header Action Bar: Count & Filter Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (showEmptyState) "0 Notifications" else "${notificationsList.size} Notifications",
+                        text = "${filteredList.size} Notifications",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -161,10 +159,9 @@ fun NotificationsScreen(
                         color = Color(0xFF1A1A1A)
                     )
 
-                    // Toggle Button to demonstrate empty state vs populated list
-                    TextButton(onClick = { showEmptyState = !showEmptyState }) {
+                    TextButton(onClick = { filterUnreadOnly = !filterUnreadOnly }) {
                         Text(
-                            text = if (showEmptyState) "Show Inbox" else "Clear View",
+                            text = if (filterUnreadOnly) "Show All" else "Unread Only",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = DarkGreenHeader
@@ -176,7 +173,7 @@ fun NotificationsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // EMPTY STATE
-                if (showEmptyState) {
+                if (filteredList.isEmpty()) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
@@ -213,7 +210,7 @@ fun NotificationsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "You're all caught up! Updates regarding your submitted environmental reports will appear here.",
+                            text = "You're all caught up! Real-time updates for submitted environmental reports will appear here.",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                             color = Color(0xFF666666),
                             textAlign = TextAlign.Center,
@@ -223,12 +220,12 @@ fun NotificationsScreen(
                 } else {
                     // NOTIFICATION CARDS LIST
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        notificationsList.forEach { item ->
+                        filteredList.forEach { item ->
                             Card(
                                 onClick = { onSelectNotification(item.caseId) },
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
                                 shape = RoundedCornerShape(16.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(
@@ -242,7 +239,8 @@ fun NotificationsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Row(
-                                            verticalAlignment = Alignment.CenterVertically
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.weight(1f)
                                         ) {
                                             if (!item.isRead) {
                                                 Box(
@@ -264,6 +262,8 @@ fun NotificationsScreen(
                                             )
                                         }
 
+                                        Spacer(modifier = Modifier.width(8.dp))
+
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
                                             color = item.statusBg
@@ -280,7 +280,7 @@ fun NotificationsScreen(
                                         }
                                     }
 
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(6.dp))
 
                                     Text(
                                         text = item.caseId,
@@ -301,7 +301,7 @@ fun NotificationsScreen(
                                         )
                                     )
 
-                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
