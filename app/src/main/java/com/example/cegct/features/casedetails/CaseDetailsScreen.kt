@@ -25,6 +25,8 @@ import com.example.cegct.core.firestore.FirestoreRepository
 import com.example.cegct.core.firestore.FirestoreRepositoryImpl
 import com.example.cegct.core.firestore.models.ReportEntity
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
+import com.example.cegct.features.chat.ChatMessageBubble
+import com.example.cegct.features.chat.ChatRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -64,6 +66,13 @@ fun CaseDetailsScreen(
     var selectedTab by remember { mutableStateOf(CaseDetailTab.OVERVIEW) }
     val repository: FirestoreRepository = remember { FirestoreRepositoryImpl() }
     var reportEntity by remember { mutableStateOf<ReportEntity?>(null) }
+
+    val chatRepository = remember(reportId) { ChatRepository(reportId) }
+    val chatMessages by chatRepository.messages.collectAsState()
+    val isChatLoading by chatRepository.isLoading.collectAsState()
+
+    var quickReplyText by remember { mutableStateOf("") }
+    var isSendingQuickReply by remember { mutableStateOf(false) }
 
     LaunchedEffect(reportId) {
         val res = repository.getReportDetails(reportId)
@@ -370,6 +379,129 @@ fun CaseDetailsScreen(
                                                 .height(220.dp)
                                                 .clip(RoundedCornerShape(12.dp))
                                         )
+                                    }
+                                }
+                            }
+
+                            // Live Report Conversation & Admin Replies Section
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = "Official Admin Conversation",
+                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                                color = Color(0xFF111111)
+                                            )
+                                            Text(
+                                                text = "Real-time responses from CEGCT Web Dashboard",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color.Gray
+                                            )
+                                        }
+
+                                        TextButton(onClick = onNavigateToChat) {
+                                            Text(
+                                                text = "Full View →",
+                                                style = MaterialTheme.typography.labelMedium.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = DarkGreenHeader
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    if (isChatLoading && chatMessages.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(80.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(color = DarkGreenHeader)
+                                        }
+                                    } else if (chatMessages.isEmpty()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color(0xFFF5F5F5),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = "No messages yet. Send a response below to contact CEGCT official admin team regarding case $reportId.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(12.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            chatMessages.takeLast(5).forEach { msg ->
+                                                ChatMessageBubble(msg = msg, reportId = reportId)
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    // Quick Reply Box
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        OutlinedTextField(
+                                            value = quickReplyText,
+                                            onValueChange = { quickReplyText = it },
+                                            placeholder = { Text("Reply for case $reportId...") },
+                                            shape = RoundedCornerShape(12.dp),
+                                            singleLine = true,
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                focusedBorderColor = DarkGreenHeader,
+                                                unfocusedBorderColor = Color(0xFFCCCCCC)
+                                            ),
+                                            modifier = Modifier.weight(1f)
+                                        )
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        Button(
+                                            onClick = {
+                                                val textToSend = quickReplyText.trim()
+                                                if (textToSend.isNotBlank() && !isSendingQuickReply) {
+                                                    isSendingQuickReply = true
+                                                    chatRepository.sendMessage(textToSend) { success ->
+                                                        isSendingQuickReply = false
+                                                        if (success) {
+                                                            quickReplyText = ""
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            enabled = quickReplyText.isNotBlank() && !isSendingQuickReply,
+                                            colors = ButtonDefaults.buttonColors(containerColor = DarkGreenHeader),
+                                            shape = RoundedCornerShape(10.dp),
+                                            modifier = Modifier.height(48.dp)
+                                        ) {
+                                            if (isSendingQuickReply) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(18.dp),
+                                                    color = Color.White,
+                                                    strokeWidth = 2.dp
+                                                )
+                                            } else {
+                                                Text("Reply", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                            }
+                                        }
                                     }
                                 }
                             }
