@@ -180,6 +180,7 @@ fun CegctApp(
         }
         AuthScreenState.CHAT -> {
             ChatScreen(
+                reportId = selectedReportId,
                 onBack = { navigateBack() }
             )
         }

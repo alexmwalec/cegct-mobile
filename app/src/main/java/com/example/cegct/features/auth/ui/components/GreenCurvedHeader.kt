@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.ui.theme.CegctAppLogo
 
 private val DarkGreenHeader = Color(0xFF185835)
 
@@ -115,8 +116,8 @@ fun GreenCurvedHeader(
                         Spacer(modifier = Modifier.width(8.dp))
                     }
 
-                    Text("🌍", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.width(8.dp))
+                    CegctAppLogo(size = 30.dp)
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "CEGCT",
                         style = MaterialTheme.typography.titleLarge.copy(
