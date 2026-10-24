@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cegct.features.auth.data.AuthRepositoryImpl
 import com.example.cegct.features.auth.domain.AuthRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +31,7 @@ class AuthViewModel(
         _authError.value = null
     }
 
-    fun login(email: String, pass: String, onSuccess: () -> Unit) {
+    fun login(email: String, pass: String, onSuccess: () -> Unit, onErrorReset: (() -> Unit)? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _authError.value = null
@@ -38,8 +39,12 @@ class AuthViewModel(
             _isLoading.value = false
             result.onSuccess {
                 onSuccess()
-            }.onFailure { error ->
-                _authError.value = error.message ?: "Invalid email or password."
+            }.onFailure {
+                // Do not display red error banners to the user.
+                _authError.value = null
+                // Wait 30 seconds (30,000 ms) before resetting form
+                delay(30000)
+                onErrorReset?.invoke()
             }
         }
     }

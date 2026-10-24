@@ -39,55 +39,8 @@ data class MapReportMarker(
     val longitude: Double,
     val status: String,
     val urgency: String,
-    val distance: String,
+    val distance: String = "Nearby",
     val dateText: String = "Today"
-)
-
-val SampleMapMarkers = listOf(
-    MapReportMarker(
-        id = "#CEGCT-2024-001",
-        title = "Illegal Waste Dumping",
-        category = "Illegal dumping",
-        locationName = "Area 25 Sector 3, Lilongwe",
-        latitude = -13.9350,
-        longitude = 33.7850,
-        status = "SUBMITTED",
-        urgency = "HIGH",
-        distance = "0.8 km away"
-    ),
-    MapReportMarker(
-        id = "#CEGCT-2024-002",
-        title = "River Chemical Contamination",
-        category = "Water pollution",
-        locationName = "Lilongwe River Stream, Area 18",
-        latitude = -13.9626,
-        longitude = 33.7900,
-        status = "IN_PROGRESS",
-        urgency = "CRITICAL",
-        distance = "1.5 km away"
-    ),
-    MapReportMarker(
-        id = "#CEGCT-2024-003",
-        title = "Industrial Smoke Emission",
-        category = "Air pollution",
-        locationName = "Kanengo Industrial Zone",
-        latitude = -13.9000,
-        longitude = 33.8000,
-        status = "UNDER_REVIEW",
-        urgency = "MEDIUM",
-        distance = "3.2 km away"
-    ),
-    MapReportMarker(
-        id = "#CEGCT-2024-004",
-        title = "Unregulated Tree Felling",
-        category = "Deforestation",
-        locationName = "Dzalanyama Forest Reserve Sector B",
-        latitude = -14.1000,
-        longitude = 33.6000,
-        status = "SUBMITTED",
-        urgency = "HIGH",
-        distance = "4.8 km away"
-    )
 )
 
 private val DarkGreenHeader = Color(0xFF185835)
@@ -95,7 +48,7 @@ private val DarkGreenHeader = Color(0xFF185835)
 @Composable
 fun InteractiveMapWidget(
     modifier: Modifier = Modifier,
-    markers: List<MapReportMarker> = SampleMapMarkers,
+    markers: List<MapReportMarker> = emptyList(),
     isPickerMode: Boolean = false,
     selectedAddressText: String = "Lilongwe Area 25, Malawi",
     onLocationSelected: (String) -> Unit = {},
@@ -107,10 +60,10 @@ fun InteractiveMapWidget(
     }
     val coroutineScope = rememberCoroutineScope()
 
-    var selectedMarker by remember { mutableStateOf(markers.firstOrNull()) }
+    var selectedMarker by remember(markers) { mutableStateOf(markers.firstOrNull()) }
     var selectedCategoryFilter by remember { mutableStateOf("All") }
 
-    val categories = listOf("All", "Illegal dumping", "Water pollution", "Air pollution")
+    val categories = listOf("All", "Illegal dumping", "Water pollution", "Air pollution", "Deforestation")
 
     val filteredMarkers = remember(selectedCategoryFilter, markers) {
         if (selectedCategoryFilter == "All") markers
@@ -166,7 +119,7 @@ fun InteractiveMapWidget(
         }
 
         // Top Category Filter Bar (when not in picker mode)
-        if (!isPickerMode) {
+        if (!isPickerMode && markers.isNotEmpty()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -359,7 +312,7 @@ fun InteractiveMapWidget(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${marker.locationName} • ${marker.distance}",
+                                text = marker.locationName,
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                 color = Color(0xFF666666)
                             )

@@ -1,6 +1,7 @@
 package com.example.cegct.features.notifications
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,9 +18,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.core.network.NotificationDto
 import com.example.cegct.features.auth.ui.components.GreenCurvedHeader
 
 private val DarkGreenHeader = Color(0xFF185835)
@@ -63,61 +64,28 @@ private val NotificationBellIcon: ImageVector = ImageVector.Builder(
     }
 }.build()
 
-data class NotificationItemData(
-    val id: String,
-    val title: String,
-    val caseId: String,
-    val message: String,
-    val timeTime: String,
-    val statusTag: String,
-    val statusColor: Color,
-    val statusBg: Color,
-    val isRead: Boolean
-)
-
 @Composable
 fun NotificationsScreen(
     onSelectNotification: (String) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var showEmptyState by remember { mutableStateOf(false) }
+    val notifRepository = remember { NotificationsRepository() }
+    val notifications by notifRepository.notifications.collectAsState()
+    val isLoading by notifRepository.isLoading.collectAsState()
+    val errorMsg by notifRepository.error.collectAsState()
 
-    val notificationsList = remember {
-        listOf(
-            NotificationItemData(
-                id = "1",
-                title = "Report Status Updated",
-                caseId = "#CEGCT-2024-0042",
-                message = "NEMA regional office assigned an assessment officer to inspect the reported water contamination.",
-                timeTime = "10 mins ago",
-                statusTag = "In Progress",
-                statusColor = Color(0xFFEF6C00),
-                statusBg = Color(0xFFFFF3E0),
-                isRead = false
-            ),
-            NotificationItemData(
-                id = "2",
-                title = "New Case Response",
-                caseId = "#CEGCT-2024-0039",
-                message = "The illegal waste dumping site near Block C has been cleared by the local environmental response team.",
-                timeTime = "2 hours ago",
-                statusTag = "Resolved",
-                statusColor = Color(0xFF2E7D32),
-                statusBg = Color(0xFFE8F5E9),
-                isRead = true
-            ),
-            NotificationItemData(
-                id = "3",
-                title = "Report Under Review",
-                caseId = "#CEGCT-2024-0028",
-                message = "Your environmental report on air pollution emissions has been verified and forwarded to authorities.",
-                timeTime = "1 day ago",
-                statusTag = "Under Review",
-                statusColor = Color(0xFF00838F),
-                statusBg = Color(0xFFE0F7FA),
-                isRead = true
-            )
-        )
+    var filterUnreadOnly by remember { mutableStateOf(false) }
+
+    val filteredList = remember(notifications, filterUnreadOnly) {
+        if (filterUnreadOnly) {
+            notifications.filter { !it.isRead }
+        } else {
+            notifications
+        }
+    }
+
+    val unreadCount = remember(notifications) {
+        notifications.count { !it.isRead }
     }
 
     Box(
@@ -133,7 +101,7 @@ fun NotificationsScreen(
             // Dark Green Header Banner
             GreenCurvedHeader(
                 title = "Notifications Inbox",
-                subtitle = "Stay updated on your reported environmental issues",
+                subtitle = if (unreadCount > 0) "$unreadCount unread notification${if (unreadCount > 1) "s" else ""}" else "All notifications up to date",
                 showNotificationBell = false,
                 showBackArrow = true,
                 onBack = onBack
@@ -146,14 +114,31 @@ fun NotificationsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // Header Action Bar: Count & Toggle View
+                // Error Bar
+                errorMsg?.let { err ->
+                    Surface(
+                        color = Color(0xFFFFEBEE),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Text(
+                            text = err,
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFD32F2F)),
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                // Header Action Bar: Count & Filter Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (showEmptyState) "0 Notifications" else "${notificationsList.size} Notifications",
+                        text = "${filteredList.size} Notifications",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -161,10 +146,9 @@ fun NotificationsScreen(
                         color = Color(0xFF1A1A1A)
                     )
 
-                    // Toggle Button to demonstrate empty state vs populated list
-                    TextButton(onClick = { showEmptyState = !showEmptyState }) {
+                    TextButton(onClick = { filterUnreadOnly = !filterUnreadOnly }) {
                         Text(
-                            text = if (showEmptyState) "Show Inbox" else "Clear View",
+                            text = if (filterUnreadOnly) "Show All" else "Unread Only",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = DarkGreenHeader
@@ -175,8 +159,19 @@ fun NotificationsScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // LOADING STATE
+                if (isLoading && notifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = DarkGreenHeader)
+                    }
+                }
                 // EMPTY STATE
-                if (showEmptyState) {
+                else if (filteredList.isEmpty()) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
@@ -213,7 +208,7 @@ fun NotificationsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "You're all caught up! Updates regarding your submitted environmental reports will appear here.",
+                            text = "You're all caught up! Official replies and status updates for submitted environmental reports will appear here.",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                             color = Color(0xFF666666),
                             textAlign = TextAlign.Center,
@@ -223,107 +218,18 @@ fun NotificationsScreen(
                 } else {
                     // NOTIFICATION CARDS LIST
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        notificationsList.forEach { item ->
-                            Card(
-                                onClick = { onSelectNotification(item.caseId) },
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                shape = RoundedCornerShape(16.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            if (!item.isRead) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(8.dp)
-                                                        .clip(CircleShape)
-                                                        .background(DarkGreenHeader)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                            }
-
-                                            Text(
-                                                text = item.title,
-                                                style = MaterialTheme.typography.titleMedium.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 16.sp
-                                                ),
-                                                color = Color(0xFF111111)
-                                            )
+                        filteredList.forEach { notif ->
+                            NotificationCard(
+                                notif = notif,
+                                onClick = {
+                                    notifRepository.markAsRead(notif.effectiveId) {
+                                        val targetReportId = notif.effectiveReportId
+                                        if (targetReportId.isNotBlank()) {
+                                            onSelectNotification(targetReportId)
                                         }
-
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = item.statusBg
-                                        ) {
-                                            Text(
-                                                text = item.statusTag,
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 11.sp
-                                                ),
-                                                color = item.statusColor,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    Text(
-                                        text = item.caseId,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp
-                                        ),
-                                        color = DarkGreenHeader
-                                    )
-
-                                    Spacer(modifier = Modifier.height(6.dp))
-
-                                    Text(
-                                        text = item.message,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF444444)
-                                        )
-                                    )
-
-                                    Spacer(modifier = Modifier.height(10.dp))
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = item.timeTime,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                            color = Color(0xFF888888)
-                                        )
-
-                                        Text(
-                                            text = "View details →",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                color = DarkGreenHeader
-                                            )
-                                        )
                                     }
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -334,8 +240,118 @@ fun NotificationsScreen(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun NotificationsScreenPreview() {
-    NotificationsScreen()
+fun NotificationCard(
+    notif: NotificationDto,
+    onClick: () -> Unit
+) {
+    val isReply = notif.isAdminReply
+    val typeBadgeBg = if (isReply) Color(0xFFE0F2F1) else Color(0xFFFFF3E0)
+    val typeBadgeText = if (isReply) Color(0xFF00796B) else Color(0xFFE65100)
+    val typeLabel = if (isReply) "ADMIN REPLY" else "STATUS UPDATE"
+
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (!notif.isRead) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(CircleShape)
+                                .background(DarkGreenHeader)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    Text(
+                        text = notif.effectiveTitle,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = if (!notif.isRead) FontWeight.ExtraBold else FontWeight.Bold,
+                            fontSize = 16.sp
+                        ),
+                        color = Color(0xFF111111)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = typeBadgeBg
+                ) {
+                    Text(
+                        text = typeLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        ),
+                        color = typeBadgeText,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            if (notif.effectiveReportId.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Report Case #${notif.effectiveReportId}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    ),
+                    color = DarkGreenHeader
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = notif.effectiveBody,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    color = Color(0xFF444444)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = notif.effectiveCreatedAt,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                    color = Color(0xFF888888)
+                )
+
+                Text(
+                    text = "View details & chat →",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = DarkGreenHeader
+                    )
+                )
+            }
+        }
+    }
 }

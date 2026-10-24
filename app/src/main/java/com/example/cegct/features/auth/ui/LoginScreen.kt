@@ -9,11 +9,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.LocalAutofillHighlightBrush
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -136,7 +139,6 @@ fun LoginScreen(
 ) {
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val authError by viewModel.authError.collectAsState()
     val strings = getAuthStrings(selectedLanguage)
 
     var email by remember { mutableStateOf("") }
@@ -179,143 +181,165 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(47.dp))
 
-            // White Form Card with Elevated Border
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+            // White Form Card with Elevated Border and Transparent Autofill Highlight
+            CompositionLocalProvider(
+                LocalAutofillHighlightBrush provides SolidColor(Color.Transparent)
             ) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp)
                 ) {
-                    if (authError != null) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp)
-                        ) {
-                            Text(
-                                text = authError ?: "",
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(12.dp)
-                            )
-                        }
-                    }
-
-
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 1. Email Input Field
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = {
-                            email = it
-                            if (!emailTouched && it.length > 3) emailTouched = true
-                            viewModel.clearError()
-                        },
-                        label = { Text(strings.emailLabel) },
-                        placeholder = { Text("example@gmail.com") },
-                        isError = emailErrorText != null,
-                        supportingText = {
-                            if (emailErrorText != null) {
-                                Text(text = emailErrorText, color = MaterialTheme.colorScheme.error)
-                            }
-                        },
+                    Surface(
+                        color = Color.White,
                         shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFFAFAFA),
-                            unfocusedContainerColor = Color(0xFFFAFAFA),
-                            disabledContainerColor = Color(0xFFFAFAFA),
-                            focusedBorderColor = DarkGreenHeader,
-                            unfocusedBorderColor = Color(0xFFCCCCCC),
-                            focusedLabelColor = DarkGreenHeader,
-                            unfocusedLabelColor = Color(0xFF666666),
-                            focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Next
-                        ),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { focusState ->
-                                if (!focusState.isFocused && email.isNotEmpty()) {
-                                    emailTouched = true
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = {
+                                email = it
+                                if (!emailTouched && it.length > 3) emailTouched = true
+                                viewModel.clearError()
+                            },
+                            label = { Text(strings.emailLabel) },
+                            placeholder = { Text("example@gmail.com") },
+                            isError = emailErrorText != null,
+                            supportingText = {
+                                if (emailErrorText != null) {
+                                    Text(text = emailErrorText, color = MaterialTheme.colorScheme.error)
                                 }
-                            }
-                    )
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White,
+                                errorContainerColor = Color.White,
+                                focusedBorderColor = DarkGreenHeader,
+                                unfocusedBorderColor = Color(0xFFCCCCCC),
+                                focusedLabelColor = DarkGreenHeader,
+                                unfocusedLabelColor = Color(0xFF666666),
+                                focusedTextColor = Color(0xFF111111),
+                                unfocusedTextColor = Color(0xFF111111),
+                                selectionColors = TextSelectionColors(
+                                    handleColor = DarkGreenHeader,
+                                    backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                                )
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.isFocused && email.isNotEmpty()) {
+                                        emailTouched = true
+                                    }
+                                }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // 2. Password Input Field
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = {
-                            password = it
-                            if (!passwordTouched && it.length > 2) passwordTouched = true
-                            viewModel.clearError()
-                        },
-                        label = { Text(strings.passwordLabel) },
-                        placeholder = { Text("••••••••") },
-                        isError = passwordErrorText != null,
-                        supportingText = {
-                            if (passwordErrorText != null) {
-                                Text(text = passwordErrorText, color = MaterialTheme.colorScheme.error)
-                            }
-                        },
+                    Surface(
+                        color = Color.White,
                         shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFFAFAFA),
-                            unfocusedContainerColor = Color(0xFFFAFAFA),
-                            disabledContainerColor = Color(0xFFFAFAFA),
-                            focusedBorderColor = DarkGreenHeader,
-                            unfocusedBorderColor = Color(0xFFCCCCCC),
-                            focusedLabelColor = DarkGreenHeader,
-                            unfocusedLabelColor = Color(0xFF666666),
-                            focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
-                        ),
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                    tint = Color(0xFF555555)
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = {
+                                password = it
+                                if (!passwordTouched && it.length > 2) passwordTouched = true
+                                viewModel.clearError()
+                            },
+                            label = { Text(strings.passwordLabel) },
+                            placeholder = { Text("••••••••") },
+                            isError = passwordErrorText != null,
+                            supportingText = {
+                                if (passwordErrorText != null) {
+                                    Text(text = passwordErrorText, color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White,
+                                errorContainerColor = Color.White,
+                                focusedBorderColor = DarkGreenHeader,
+                                unfocusedBorderColor = Color(0xFFCCCCCC),
+                                focusedLabelColor = DarkGreenHeader,
+                                unfocusedLabelColor = Color(0xFF666666),
+                                focusedTextColor = Color(0xFF111111),
+                                unfocusedTextColor = Color(0xFF111111),
+                                selectionColors = TextSelectionColors(
+                                    handleColor = DarkGreenHeader,
+                                    backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
                                 )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                if (email.isNotBlank() && password.isNotBlank()) {
-                                    viewModel.login(email, password, onLoginSuccess)
+                            ),
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        imageVector = if (passwordVisible) EyeIcon else EyeOffIcon,
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                        tint = Color(0xFF555555)
+                                    )
                                 }
-                            }
-                        ),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { focusState ->
-                                if (!focusState.isFocused && password.isNotEmpty()) {
-                                    passwordTouched = true
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    if (email.isNotBlank() && password.isNotBlank()) {
+                                        viewModel.login(
+                                            email = email,
+                                            pass = password,
+                                            onSuccess = onLoginSuccess,
+                                            onErrorReset = {
+                                                email = ""
+                                                password = ""
+                                                emailTouched = false
+                                                passwordTouched = false
+                                            }
+                                        )
+                                    }
                                 }
-                            }
-                    )
+                            ),
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.isFocused && password.isNotEmpty()) {
+                                        passwordTouched = true
+                                    }
+                                }
+                        )
+                    }
 
                     // Forgot Password link
                     Row(
@@ -341,7 +365,17 @@ fun LoginScreen(
                             emailTouched = true
                             passwordTouched = true
                             if (email.isNotBlank() && password.isNotBlank() && isEmailValid) {
-                                viewModel.login(email, password, onLoginSuccess)
+                                viewModel.login(
+                                    email = email,
+                                    pass = password,
+                                    onSuccess = onLoginSuccess,
+                                    onErrorReset = {
+                                        email = ""
+                                        password = ""
+                                        emailTouched = false
+                                        passwordTouched = false
+                                    }
+                                )
                             }
                         },
                         enabled = !isLoading && email.isNotBlank() && password.isNotBlank(),
@@ -448,6 +482,7 @@ fun LoginScreen(
                     }
                 }
             }
+        }
 
             Spacer(modifier = Modifier.height(32.dp))
         }

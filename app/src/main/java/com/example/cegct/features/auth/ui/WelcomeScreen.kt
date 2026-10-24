@@ -17,35 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cegct.ui.theme.CegctAppLogo
 import com.example.cegct.ui.theme.GreenGradientEnd
 import com.example.cegct.ui.theme.GreenGradientStart
 import kotlinx.coroutines.delay
 
-// Leaf logo icon
-private val LeafLogoIcon: ImageVector = ImageVector.Builder(
-    name = "LeafLogo",
-    defaultWidth = 64.dp,
-    defaultHeight = 64.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f
-).apply {
-    path(fill = SolidColor(Color(0xFF2E7D32))) {
-        moveTo(17f, 8f)
-        curveTo(17f, 8f, 13f, 2f, 6f, 5f)
-        curveTo(6f, 5f, 3f, 12f, 9f, 17f)
-        curveTo(13.5f, 20.75f, 19f, 17f, 19f, 17f)
-        curveTo(19f, 17f, 21f, 11f, 17f, 8f)
-        close()
-    }
-    path(fill = null, stroke = SolidColor(Color.White), strokeLineWidth = 2f) {
-        moveTo(5f, 19f)
-        lineTo(12f, 12f)
-        moveTo(12f, 12f)
-        lineTo(16f, 10f)
-        moveTo(12f, 12f)
-        lineTo(9f, 15f)
-    }
-}.build()
+// Welcome Screen
 
 @Composable
 fun WelcomeScreen(
@@ -72,20 +49,7 @@ fun WelcomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = LeafLogoIcon,
-                    contentDescription = "CEGCT Leaf Logo",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(72.dp)
-                )
-            }
+            CegctAppLogo(size = 110.dp)
 
             Spacer(modifier = Modifier.height(28.dp))
 

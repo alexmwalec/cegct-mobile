@@ -180,6 +180,7 @@ fun CegctApp(
         }
         AuthScreenState.CHAT -> {
             ChatScreen(
+                reportId = selectedReportId,
                 onBack = { navigateBack() }
             )
         }
@@ -203,6 +204,10 @@ fun CegctApp(
         AuthScreenState.MAP -> {
             MapScreen(
                 onConfirmLocation = { navigateBack() },
+                onSelectReport = { reportId ->
+                    selectedReportId = reportId
+                    navigateTo(AuthScreenState.CASE_DETAILS)
+                },
                 onBack = { navigateBack() }
             )
         }

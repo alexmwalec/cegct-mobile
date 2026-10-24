@@ -11,9 +11,18 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object NetworkClient {
-    // Default host configuration (10.0.2.2 points to local machine localhost in Android Emulator)
-    const val BASE_URL = "http://192.168.230.89:5001/api/"
-    const val SOCKET_URL = "http://192.168.230.89:5001"
+
+    // Production Render Backend Configurations
+    private const val PROD_BASE_URL = "https://cegct-api.onrender.com/api/"
+    private const val PROD_SOCKET_URL = "https://cegct-api.onrender.com"
+
+    // Local Development Configurations (For local emulator)
+    private const val DEV_BASE_URL = "http://192.168.1.134:5001/api/"
+    private const val DEV_SOCKET_URL = "http://192.168.1.134:5001"
+
+    // Active Production Endpoints
+    const val BASE_URL = PROD_BASE_URL
+    const val SOCKET_URL = PROD_SOCKET_URL
 
     private const val PREFS_NAME = "cegct_user_prefs"
     private const val KEY_TOKEN = "jwt_token"
@@ -28,8 +37,9 @@ object NetworkClient {
         }
         OkHttpClient.Builder()
             .addInterceptor(logging)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
@@ -87,6 +97,8 @@ object NetworkClient {
             val options = IO.Options().apply {
                 auth = mapOf("token" to token)
                 reconnection = true
+                reconnectionAttempts = 10
+                reconnectionDelay = 2000
             }
             socket = IO.socket(SOCKET_URL, options)
             socket?.connect()

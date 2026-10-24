@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -143,10 +142,12 @@ fun ReportScreen(
     val coroutineScope = rememberCoroutineScope()
     val repository: com.example.cegct.core.firestore.FirestoreRepository = remember { com.example.cegct.core.firestore.FirestoreRepositoryImpl() }
     var selectedCategory by remember { mutableStateOf(category) }
+    var customCategory by remember { mutableStateOf("") }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("Area 25 Sector 3, Lilongwe") }
     var isSubmitting by remember { mutableStateOf(false) }
+    var submissionError by remember { mutableStateOf<String?>(null) }
     var isRecording by remember { mutableStateOf(false) }
     var recordingSeconds by remember { mutableIntStateOf(0) }
     var hasVoiceNote by remember { mutableStateOf(false) }
@@ -166,6 +167,7 @@ fun ReportScreen(
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
                 }
                 attachedImageUris.add(Uri.fromFile(file))
+                submissionError = null
             } catch (_: Exception) {
             }
         }
@@ -176,6 +178,7 @@ fun ReportScreen(
     ) { uris: List<Uri> ->
         if (uris.isNotEmpty()) {
             attachedImageUris.addAll(uris)
+            submissionError = null
         }
     }
 
@@ -184,6 +187,7 @@ fun ReportScreen(
         "Air pollution",
         "Unsafe waste disposal",
         "Water pollution",
+        "Deforestation",
         "Other"
     )
 
@@ -196,11 +200,6 @@ fun ReportScreen(
             }
         }
     }
-
-    val micButtonBgColor by animateColorAsState(
-        targetValue = if (isRecording) Color(0xFFE53935) else Color(0xFFE5E5E5),
-        label = "MicBgColor"
-    )
 
     // Image Picker Option Dialog
     if (showImagePickerDialog) {
@@ -317,6 +316,7 @@ fun ReportScreen(
                     onLocationSelected = { chosenAddress ->
                         locationAddress = chosenAddress
                         showMapPickerSheet = false
+                        submissionError = null
                     }
                 )
             }
@@ -351,19 +351,18 @@ fun ReportScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // 1. Upload Image Card (Camera / Gallery Picker)
+                // 1. Upload Image Card (Camera / Gallery Picker) - MANDATORY
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (attachedImageUris.isNotEmpty()) Color(0xFFE8F5E9) else Color.White
-                    ),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     border = BorderStroke(
-                        1.dp,
-                        if (attachedImageUris.isNotEmpty()) DarkGreenHeader else Color(0xFFE5E5E5)
+                        width = 1.dp,
+                        color = if (attachedImageUris.isEmpty() && submissionError != null) Color(0xFFD32F2F) else Color(0xFFE5E5E5)
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 160.dp)
                         .clickable { showImagePickerDialog = true }
                 ) {
                     Column(
@@ -390,19 +389,29 @@ fun ReportScreen(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            Text(
-                                text = "Upload Image / Take Photo",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                ),
-                                color = LabelTextColor
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Upload Image / Take Photo",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    ),
+                                    color = LabelTextColor
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "*Required",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFD32F2F)
+                                    )
+                                )
+                            }
 
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Tap to open camera or choose evidence photos from gallery",
+                                text = "Tap to open camera or choose evidence photo from gallery",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                 color = Color(0xFF666666)
                             )
@@ -414,7 +423,7 @@ fun ReportScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Attached Photos (${attachedImageUris.size}) ✓",
+                                    text = "Attached Photo Evidence (${attachedImageUris.size}) ✓",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = DarkGreenHeader
@@ -504,6 +513,31 @@ fun ReportScreen(
                     }
                 }
 
+                // 2b. Custom Category Input Field (When "Other" is selected)
+                if (selectedCategory.equals("Other", ignoreCase = true)) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = customCategory,
+                        onValueChange = { customCategory = it },
+                        label = { Text("Specify Custom Category *") },
+                        placeholder = { Text("Type custom environmental issue (e.g. Soil erosion, Noise pollution)...") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF555555),
+                            focusedTextColor = LabelTextColor,
+                            unfocusedTextColor = LabelTextColor
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 3. Description of Issue Card
@@ -512,27 +546,65 @@ fun ReportScreen(
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 160.dp)
                 ) {
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Description of Issue",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                ),
+                                color = LabelTextColor
+                            )
+
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "Description of Issue",
-                                    style = MaterialTheme.typography.titleSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    ),
-                                    color = LabelTextColor
-                                )
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = if (isRecording) Color(0xFFD32F2F) else if (hasVoiceNote) Color(0xFFE8F5E9) else Color(0xFFF0F0F0),
+                                    modifier = Modifier.clickable {
+                                        if (isRecording) {
+                                            isRecording = false
+                                            hasVoiceNote = true
+                                        } else {
+                                            isRecording = true
+                                        }
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = MicIcon,
+                                            contentDescription = "Record Voice Note",
+                                            tint = if (isRecording) Color.White else if (hasVoiceNote) DarkGreenHeader else Color(0xFF444444),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isRecording) "Rec 00:${if (recordingSeconds < 10) "0" else ""}$recordingSeconds"
+                                                   else if (hasVoiceNote) "Voice Note ✓"
+                                                   else "Record",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = if (isRecording) Color.White else if (hasVoiceNote) DarkGreenHeader else Color(0xFF444444)
+                                        )
+                                    }
+                                }
 
                                 Text(
                                     text = "${description.length}/500",
@@ -540,57 +612,36 @@ fun ReportScreen(
                                     color = Color(0xFF888888)
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                if (description.isEmpty()) {
-                                    Text(
-                                        text = "Type report details...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontSize = 14.sp,
-                                            color = Color(0xFF888888)
-                                        )
-                                    )
-                                }
-
-                                BasicTextField(
-                                    value = description,
-                                    onValueChange = { if (it.length <= 500) description = it },
-                                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        color = Color(0xFF111111)
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 80.dp, max = 140.dp)
-                                )
-                            }
                         }
 
-                        // Mic Button at Bottom Right
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Box(
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(micButtonBgColor)
-                                .clickable {
-                                    if (isRecording) {
-                                        isRecording = false
-                                        hasVoiceNote = true
-                                    } else {
-                                        isRecording = true
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .heightIn(min = 100.dp)
                         ) {
-                            Icon(
-                                imageVector = MicIcon,
-                                contentDescription = "Record Voice Note",
-                                tint = if (isRecording) Color.White else Color(0xFF444444),
-                                modifier = Modifier.size(22.dp)
+                            if (description.isEmpty()) {
+                                Text(
+                                    text = "Type report details or tap 'Record' above to speak...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF888888)
+                                    )
+                                )
+                            }
+
+                            BasicTextField(
+                                value = description,
+                                onValueChange = { if (it.length <= 500) description = it },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color(0xFF111111)
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 100.dp, max = 200.dp)
                             )
                         }
                     }
@@ -598,12 +649,15 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. GPS Pinpoint Location Card with Integrated Google Map Picker
+                // 4. GPS Pinpoint Location Card - MANDATORY
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (locationAddress.isBlank() && submissionError != null) Color(0xFFD32F2F) else Color(0xFFE5E5E5)
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -641,21 +695,33 @@ fun ReportScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "LOCATION ADDRESS",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                letterSpacing = 0.5.sp
+                                            ),
+                                            color = DarkGreenHeader
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "*Required",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFD32F2F)
+                                            )
+                                        )
+                                    }
+
                                     Text(
-                                        text = "LOCATION ADDRESS",
+                                        text = "Pick on map →",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            letterSpacing = 0.5.sp
-                                        ),
-                                        color = DarkGreenHeader
-                                    )
-                                    Text(
-                                        text = " ",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = DarkGreenHeader.copy(alpha = 0.7f)
+                                            color = DarkGreenHeader
                                         ),
                                         modifier = Modifier.clickable { showMapPickerSheet = true }
                                     )
@@ -665,7 +731,10 @@ fun ReportScreen(
 
                                 BasicTextField(
                                     value = locationAddress,
-                                    onValueChange = { locationAddress = it },
+                                    onValueChange = {
+                                        locationAddress = it
+                                        submissionError = null
+                                    },
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                                         fontSize = 15.sp,
@@ -681,26 +750,91 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
+                // Error Message Banner
+                if (submissionError != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Color(0xFFEF5350)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = submissionError!!,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color(0xFFC62828),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { submissionError = null },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Text("✕", color = Color(0xFFC62828), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
                 // 5. Submit Report Button
                 Button(
                     onClick = {
+                        // Strict Validations: Location, Image, Custom Category
+                        if (attachedImageUris.isEmpty()) {
+                            submissionError = "Please attach at least one photo or image evidence before submitting."
+                            return@Button
+                        }
+                        if (locationAddress.isBlank()) {
+                            submissionError = "Please specify or pick a location address on the map before submitting."
+                            return@Button
+                        }
+                        if (selectedCategory.equals("Other", ignoreCase = true) && customCategory.isBlank()) {
+                            submissionError = "Please type your custom issue category in the field provided."
+                            return@Button
+                        }
+
                         isSubmitting = true
+                        submissionError = null
+
                         coroutineScope.launch {
-                            val photoBase64 = attachedImageUris.firstOrNull()?.let { uri ->
-                                uriToBase64(context, uri)
+                            val selectedUri = attachedImageUris.firstOrNull()
+                            val curUser = com.example.cegct.core.network.NetworkClient.currentUser
+                            val categoryToSubmit = if (selectedCategory.equals("Other", ignoreCase = true)) {
+                                customCategory.trim()
+                            } else {
+                                selectedCategory
                             }
+
                             val newReport = com.example.cegct.core.firestore.models.ReportEntity(
-                                category = selectedCategory,
-                                title = selectedCategory,
+                                userId = curUser?.id ?: "",
+                                userName = curUser?.name ?: "Citizen",
+                                userEmail = curUser?.email ?: "",
+                                category = categoryToSubmit,
+                                title = categoryToSubmit,
                                 description = description,
-                                address = locationAddress.ifBlank { "Area 25 Sector 3, Lilongwe" },
+                                address = locationAddress.trim(),
                                 latitude = -13.9350,
-                                longitude = 33.7850,
-                                imageUrls = if (photoBase64 != null) listOf(photoBase64) else emptyList()
+                                longitude = 33.7850
                             )
-                            repository.createReport(newReport)
+
+                            val result = repository.createReport(
+                                report = newReport,
+                                imageUri = selectedUri,
+                                context = context
+                            )
+
                             isSubmitting = false
-                            onSubmitSuccess()
+                            if (result.isSuccess) {
+                                onSubmitSuccess()
+                            } else {
+                                submissionError = result.exceptionOrNull()?.message ?: "Report submission failed."
+                            }
                         }
                     },
                     enabled = !isSubmitting,
@@ -789,31 +923,6 @@ fun UriThumbnailItem(
         ) {
             Text(text = "✕", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-private fun uriToBase64(context: android.content.Context, uri: Uri): String? {
-    return try {
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            val original = BitmapFactory.decodeStream(inputStream) ?: return null
-            val maxDim = 500
-            val width = original.width
-            val height = original.height
-            val scaled = if (width > maxDim || height > maxDim) {
-                val ratio = width.toFloat() / height.toFloat()
-                if (ratio > 1) {
-                    Bitmap.createScaledBitmap(original, maxDim, (maxDim / ratio).toInt(), true)
-                } else {
-                    Bitmap.createScaledBitmap(original, (maxDim * ratio).toInt(), maxDim, true)
-                }
-            } else original
-            val outputStream = java.io.ByteArrayOutputStream()
-            scaled.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
-            val bytes = outputStream.toByteArray()
-            "data:image/jpeg;base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        }
-    } catch (_: Exception) {
-        null
     }
 }
 

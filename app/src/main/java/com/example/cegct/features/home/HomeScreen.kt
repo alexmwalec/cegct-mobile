@@ -18,7 +18,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.cegct.core.firestore.FirestoreRepository
+import com.example.cegct.core.firestore.FirestoreRepositoryImpl
+import com.example.cegct.core.firestore.models.ReportEntity
 import com.example.cegct.features.map.InteractiveMapWidget
+import com.example.cegct.ui.theme.CegctAppLogo
 import com.example.cegct.ui.theme.GreenPrimary
 
 // Material Vector Icons for Cards
@@ -283,8 +288,8 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🌍", style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.width(8.dp))
+                            CegctAppLogo(size = 30.dp)
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "CEGCT",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
@@ -556,7 +561,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
             }
         }

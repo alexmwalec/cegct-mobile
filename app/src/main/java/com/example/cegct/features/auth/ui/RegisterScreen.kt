@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.LocalAutofillHighlightBrush
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -150,15 +152,18 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // White Form Card with Elevated Border
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+            CompositionLocalProvider(
+                LocalAutofillHighlightBrush provides SolidColor(Color.Transparent)
             ) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -220,12 +225,17 @@ fun RegisterScreen(
                             focusedContainerColor = Color(0xFFFAFAFA),
                             unfocusedContainerColor = Color(0xFFFAFAFA),
                             disabledContainerColor = Color(0xFFFAFAFA),
+                            errorContainerColor = Color(0xFFFAFAFA),
                             focusedBorderColor = DarkGreenHeader,
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = DarkGreenHeader,
                             unfocusedLabelColor = Color(0xFF666666),
                             focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
+                            unfocusedTextColor = Color(0xFF111111),
+                            selectionColors = TextSelectionColors(
+                                handleColor = DarkGreenHeader,
+                                backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                            )
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                         singleLine = true,
@@ -257,12 +267,17 @@ fun RegisterScreen(
                             focusedContainerColor = Color(0xFFFAFAFA),
                             unfocusedContainerColor = Color(0xFFFAFAFA),
                             disabledContainerColor = Color(0xFFFAFAFA),
+                            errorContainerColor = Color(0xFFFAFAFA),
                             focusedBorderColor = DarkGreenHeader,
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = DarkGreenHeader,
                             unfocusedLabelColor = Color(0xFF666666),
                             focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
+                            unfocusedTextColor = Color(0xFF111111),
+                            selectionColors = TextSelectionColors(
+                                handleColor = DarkGreenHeader,
+                                backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                            )
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         singleLine = true,
@@ -294,12 +309,17 @@ fun RegisterScreen(
                             focusedContainerColor = Color(0xFFFAFAFA),
                             unfocusedContainerColor = Color(0xFFFAFAFA),
                             disabledContainerColor = Color(0xFFFAFAFA),
+                            errorContainerColor = Color(0xFFFAFAFA),
                             focusedBorderColor = DarkGreenHeader,
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = DarkGreenHeader,
                             unfocusedLabelColor = Color(0xFF666666),
                             focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
+                            unfocusedTextColor = Color(0xFF111111),
+                            selectionColors = TextSelectionColors(
+                                handleColor = DarkGreenHeader,
+                                backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                            )
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
                         singleLine = true,
@@ -331,12 +351,17 @@ fun RegisterScreen(
                             focusedContainerColor = Color(0xFFFAFAFA),
                             unfocusedContainerColor = Color(0xFFFAFAFA),
                             disabledContainerColor = Color(0xFFFAFAFA),
+                            errorContainerColor = Color(0xFFFAFAFA),
                             focusedBorderColor = DarkGreenHeader,
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = DarkGreenHeader,
                             unfocusedLabelColor = Color(0xFF666666),
                             focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
+                            unfocusedTextColor = Color(0xFF111111),
+                            selectionColors = TextSelectionColors(
+                                handleColor = DarkGreenHeader,
+                                backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                            )
                         ),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -383,12 +408,17 @@ fun RegisterScreen(
                             focusedContainerColor = Color(0xFFFAFAFA),
                             unfocusedContainerColor = Color(0xFFFAFAFA),
                             disabledContainerColor = Color(0xFFFAFAFA),
+                            errorContainerColor = Color(0xFFFAFAFA),
                             focusedBorderColor = DarkGreenHeader,
                             unfocusedBorderColor = Color(0xFFCCCCCC),
                             focusedLabelColor = DarkGreenHeader,
                             unfocusedLabelColor = Color(0xFF666666),
                             focusedTextColor = Color(0xFF111111),
-                            unfocusedTextColor = Color(0xFF111111)
+                            unfocusedTextColor = Color(0xFF111111),
+                            selectionColors = TextSelectionColors(
+                                handleColor = DarkGreenHeader,
+                                backgroundColor = DarkGreenHeader.copy(alpha = 0.2f)
+                            )
                         ),
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -500,6 +530,7 @@ fun RegisterScreen(
                     }
                 }
             }
+        }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
