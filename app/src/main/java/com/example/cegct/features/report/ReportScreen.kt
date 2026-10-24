@@ -728,7 +728,11 @@ fun ReportScreen(
                         submissionError = null
                         coroutineScope.launch {
                             val selectedUri = attachedImageUris.firstOrNull()
+                            val curUser = com.example.cegct.core.network.NetworkClient.currentUser
                             val newReport = com.example.cegct.core.firestore.models.ReportEntity(
+                                userId = curUser?.id ?: "",
+                                userName = curUser?.name ?: "Citizen",
+                                userEmail = curUser?.email ?: "",
                                 category = selectedCategory,
                                 title = selectedCategory,
                                 description = description,
