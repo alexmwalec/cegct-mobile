@@ -24,21 +24,6 @@ private val DarkGreenHeader = Color(0xFF185835)
 private val ScreenBackground = Color(0xFFE5F0EE)
 
 // Material Vector Icons for Profile Settings Cards
-private val LanguageIcon: ImageVector = ImageVector.Builder("Language", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = SolidColor(DarkGreenHeader)) {
-        moveTo(11.99f, 2f)
-        curveTo(6.47f, 2f, 2f, 6.48f, 2f, 12f)
-        curveTo(2f, 17.52f, 6.47f, 22f, 11.99f, 22f)
-        curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
-        curveTo(22f, 6.48f, 17.52f, 2f, 11.99f, 2f)
-        close()
-        moveTo(18.92f, 8f)
-        lineTo(15.78f, 8f)
-        curveTo(15.44f, 6.64f, 14.89f, 5.37f, 14.15f, 4.22f)
-        curveTo(16.27f, 4.93f, 17.98f, 6.32f, 18.92f, 8f)
-        close()
-    }
-}.build()
 
 private val LockKeyIcon: ImageVector = ImageVector.Builder("LockKey", 24.dp, 24.dp, 24f, 24f).apply {
     path(fill = SolidColor(DarkGreenHeader)) {
@@ -327,36 +312,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 1. Language Card
-                Card(
-                    onClick = { },
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(LanguageIcon, contentDescription = "Language", tint = DarkGreenHeader, modifier = Modifier.size(24.dp))
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = "Language",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                            )
-                        }
-                        Text("›", style = MaterialTheme.typography.titleLarge, color = Color.Gray)
-                    }
-                }
-
-                // 2. Change Password Card
+                // 1. Change Password Card
                 Card(
                     onClick = onNavigateToChangePassword,
                     colors = CardDefaults.cardColors(containerColor = Color.White),
