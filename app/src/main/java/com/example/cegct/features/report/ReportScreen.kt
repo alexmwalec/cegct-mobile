@@ -142,6 +142,7 @@ fun ReportScreen(
     val coroutineScope = rememberCoroutineScope()
     val repository: com.example.cegct.core.firestore.FirestoreRepository = remember { com.example.cegct.core.firestore.FirestoreRepositoryImpl() }
     var selectedCategory by remember { mutableStateOf(category) }
+    var customCategory by remember { mutableStateOf("") }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
     var locationAddress by remember { mutableStateOf("Area 25 Sector 3, Lilongwe") }
@@ -166,6 +167,7 @@ fun ReportScreen(
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
                 }
                 attachedImageUris.add(Uri.fromFile(file))
+                submissionError = null
             } catch (_: Exception) {
             }
         }
@@ -176,6 +178,7 @@ fun ReportScreen(
     ) { uris: List<Uri> ->
         if (uris.isNotEmpty()) {
             attachedImageUris.addAll(uris)
+            submissionError = null
         }
     }
 
@@ -184,6 +187,7 @@ fun ReportScreen(
         "Air pollution",
         "Unsafe waste disposal",
         "Water pollution",
+        "Deforestation",
         "Other"
     )
 
@@ -312,6 +316,7 @@ fun ReportScreen(
                     onLocationSelected = { chosenAddress ->
                         locationAddress = chosenAddress
                         showMapPickerSheet = false
+                        submissionError = null
                     }
                 )
             }
@@ -346,12 +351,15 @@ fun ReportScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // 1. Upload Image Card (Camera / Gallery Picker)
+                // 1. Upload Image Card (Camera / Gallery Picker) - MANDATORY
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (attachedImageUris.isEmpty() && submissionError != null) Color(0xFFD32F2F) else Color(0xFFE5E5E5)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 160.dp)
@@ -381,19 +389,29 @@ fun ReportScreen(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            Text(
-                                text = "Upload Image / Take Photo",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                ),
-                                color = LabelTextColor
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Upload Image / Take Photo",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    ),
+                                    color = LabelTextColor
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "*Required",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFD32F2F)
+                                    )
+                                )
+                            }
 
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Tap to open camera or choose evidence photos from gallery",
+                                text = "Tap to open camera or choose evidence photo from gallery",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                 color = Color(0xFF666666)
                             )
@@ -405,7 +423,7 @@ fun ReportScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Attached Photos (${attachedImageUris.size}) ✓",
+                                    text = "Attached Photo Evidence (${attachedImageUris.size}) ✓",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = DarkGreenHeader
@@ -495,6 +513,31 @@ fun ReportScreen(
                     }
                 }
 
+                // 2b. Custom Category Input Field (When "Other" is selected)
+                if (selectedCategory.equals("Other", ignoreCase = true)) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = customCategory,
+                        onValueChange = { customCategory = it },
+                        label = { Text("Specify Custom Category *") },
+                        placeholder = { Text("Type custom environmental issue (e.g. Soil erosion, Noise pollution)...") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = DarkGreenHeader,
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedLabelColor = DarkGreenHeader,
+                            unfocusedLabelColor = Color(0xFF555555),
+                            focusedTextColor = LabelTextColor,
+                            unfocusedTextColor = LabelTextColor
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 3. Description of Issue Card
@@ -530,7 +573,6 @@ fun ReportScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // Mic Record Button cleanly positioned in header row
                                 Surface(
                                     shape = RoundedCornerShape(20.dp),
                                     color = if (isRecording) Color(0xFFD32F2F) else if (hasVoiceNote) Color(0xFFE8F5E9) else Color(0xFFF0F0F0),
@@ -607,12 +649,15 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. GPS Pinpoint Location Card with Integrated Google Map Picker
+                // 4. GPS Pinpoint Location Card - MANDATORY
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (locationAddress.isBlank() && submissionError != null) Color(0xFFD32F2F) else Color(0xFFE5E5E5)
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -650,21 +695,33 @@ fun ReportScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "LOCATION ADDRESS",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                letterSpacing = 0.5.sp
+                                            ),
+                                            color = DarkGreenHeader
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "*Required",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFD32F2F)
+                                            )
+                                        )
+                                    }
+
                                     Text(
-                                        text = "LOCATION ADDRESS",
+                                        text = "Pick on map →",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            letterSpacing = 0.5.sp
-                                        ),
-                                        color = DarkGreenHeader
-                                    )
-                                    Text(
-                                        text = " ",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = DarkGreenHeader.copy(alpha = 0.7f)
+                                            color = DarkGreenHeader
                                         ),
                                         modifier = Modifier.clickable { showMapPickerSheet = true }
                                     )
@@ -674,7 +731,10 @@ fun ReportScreen(
 
                                 BasicTextField(
                                     value = locationAddress,
-                                    onValueChange = { locationAddress = it },
+                                    onValueChange = {
+                                        locationAddress = it
+                                        submissionError = null
+                                    },
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                                         fontSize = 15.sp,
@@ -690,6 +750,7 @@ fun ReportScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
+                // Error Message Banner
                 if (submissionError != null) {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
@@ -724,27 +785,50 @@ fun ReportScreen(
                 // 5. Submit Report Button
                 Button(
                     onClick = {
+                        // Strict Validations: Location, Image, Custom Category
+                        if (attachedImageUris.isEmpty()) {
+                            submissionError = "Please attach at least one photo or image evidence before submitting."
+                            return@Button
+                        }
+                        if (locationAddress.isBlank()) {
+                            submissionError = "Please specify or pick a location address on the map before submitting."
+                            return@Button
+                        }
+                        if (selectedCategory.equals("Other", ignoreCase = true) && customCategory.isBlank()) {
+                            submissionError = "Please type your custom issue category in the field provided."
+                            return@Button
+                        }
+
                         isSubmitting = true
                         submissionError = null
+
                         coroutineScope.launch {
                             val selectedUri = attachedImageUris.firstOrNull()
                             val curUser = com.example.cegct.core.network.NetworkClient.currentUser
+                            val categoryToSubmit = if (selectedCategory.equals("Other", ignoreCase = true)) {
+                                customCategory.trim()
+                            } else {
+                                selectedCategory
+                            }
+
                             val newReport = com.example.cegct.core.firestore.models.ReportEntity(
                                 userId = curUser?.id ?: "",
                                 userName = curUser?.name ?: "Citizen",
                                 userEmail = curUser?.email ?: "",
-                                category = selectedCategory,
-                                title = selectedCategory,
+                                category = categoryToSubmit,
+                                title = categoryToSubmit,
                                 description = description,
-                                address = locationAddress.ifBlank { "Area 25 Sector 3, Lilongwe" },
+                                address = locationAddress.trim(),
                                 latitude = -13.9350,
                                 longitude = 33.7850
                             )
+
                             val result = repository.createReport(
                                 report = newReport,
                                 imageUri = selectedUri,
                                 context = context
                             )
+
                             isSubmitting = false
                             if (result.isSuccess) {
                                 onSubmitSuccess()
